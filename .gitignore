@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtualenv
+.venv/
+
+# IDE / Editor
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Reports / Docs
+reports/
+
+# Secrets
+.env
+
+# Misc
+формат посылки.txt
+хакатон.pdf
