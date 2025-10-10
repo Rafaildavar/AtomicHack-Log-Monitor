@@ -1,7 +1,7 @@
 import pandas as pd
 from log_to_df import logs_to_dataframe
 
-def find_anomaly_problem_chain(VC, anomalies_problems):
+def find_anomaly_problem_chain(VC:pd.DataFrame, anomalies_problems:pd.DataFrame):
     """Находит цепочку аномалия-проблема и создает результирующий DataFrame"""
     results = []
 
