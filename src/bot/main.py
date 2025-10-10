@@ -8,7 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from .config import settings
-from .handlers import menu_router, start_router
+from .handlers import menu_router, start_router, upload_router
 
 
 async def main() -> None:
@@ -20,6 +20,7 @@ async def main() -> None:
 
     dp.include_router(start_router)
     dp.include_router(menu_router)
+    dp.include_router(upload_router)
 
     # TODO: подключить webhook, если требуется
 
