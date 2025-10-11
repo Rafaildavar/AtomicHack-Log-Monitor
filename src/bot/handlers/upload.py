@@ -148,14 +148,24 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                                     for line_num, line in enumerate(lines, 1):
                                         line_stripped = line.strip()
                                         if 'WARNING' in line_stripped.upper() or 'ERROR' in line_stripped.upper():
-                                            # Простой парсинг строки
+                                            # Парсинг строки с извлечением source
                                             parts = line_stripped.split(' ', 2)
                                             if len(parts) >= 3:
-                                                dt, level, text = parts[0], parts[1], parts[2]
+                                                dt, level, rest = parts[0], parts[1], parts[2]
+                                                
+                                                # Извлекаем source если есть (формат: "source: текст")
+                                                if ':' in rest:
+                                                    source_parts = rest.split(':', 1)
+                                                    source = source_parts[0].strip()
+                                                    text = source_parts[1].strip()
+                                                else:
+                                                    source = 'unknown'
+                                                    text = rest
+                                                
                                                 scenario_logs.append({
                                                     'datetime': dt,
                                                     'level': level,
-                                                    'source': 'unknown',
+                                                    'source': source,
                                                     'text': text,
                                                     'full_line': line_stripped,  # Полная строка для вывода
                                                     'filename': file,
@@ -174,11 +184,21 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                             if 'WARNING' in line_stripped.upper() or 'ERROR' in line_stripped.upper():
                                 parts = line_stripped.split(' ', 2)
                                 if len(parts) >= 3:
-                                    dt, level, text = parts[0], parts[1], parts[2]
+                                    dt, level, rest = parts[0], parts[1], parts[2]
+                                    
+                                    # Извлекаем source если есть (формат: "source: текст")
+                                    if ':' in rest:
+                                        source_parts = rest.split(':', 1)
+                                        source = source_parts[0].strip()
+                                        text = source_parts[1].strip()
+                                    else:
+                                        source = 'unknown'
+                                        text = rest
+                                    
                                     scenario_logs.append({
                                         'datetime': dt,
                                         'level': level,
-                                        'source': 'unknown',
+                                        'source': source,
                                         'text': text,
                                         'full_line': line_stripped,  # Полная строка для вывода
                                         'filename': os.path.basename(file_path),
