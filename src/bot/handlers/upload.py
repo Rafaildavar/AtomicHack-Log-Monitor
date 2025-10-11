@@ -89,12 +89,17 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
         anomalies_files = []
 
         if file_path.endswith('.zip'):
-            # Извлекаем файлы из архива
+            # Создаем уникальную папку для извлечения с временной меткой
+            import time
+            timestamp = int(time.time())
+            extract_dir = os.path.join(os.path.dirname(file_path), f'extracted_{timestamp}')
+            os.makedirs(extract_dir, exist_ok=True)
+            
+            # Извлекаем файлы из архива в уникальную папку
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                zip_ref.extractall(os.path.dirname(file_path))
+                zip_ref.extractall(extract_dir)
 
             # Находим все файлы anomalies_problems.csv
-            extract_dir = os.path.dirname(file_path)
             for root, dirs, files in os.walk(extract_dir):
                 for file in files:
                     if file == 'anomalies_problems.csv':

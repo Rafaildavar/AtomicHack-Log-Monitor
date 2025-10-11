@@ -67,9 +67,17 @@ class MLLogAnalyzer:
                 best_idx = cosine_scores.argmax().item()
                 best_score = cosine_scores[best_idx].item()
 
-                # Если сходство ниже порога — пропускаем (не добавляем в результат)
+                # Если сходство ниже порога — добавляем с None
                 if best_score < self.similarity_threshold:
-                    logger.debug(f"Аномалия с низкой уверенностью пропущена: {text[:50]}... (score: {best_score})")
+                    logger.debug(f"Аномалия с низкой уверенностью: {text[:50]}... (score: {best_score})")
+                    
+                    results.append({
+                        'ID аномалии': None,
+                        'ID проблемы': None,
+                        'Файл с проблемой': None,
+                        '№ строки': None,
+                        'Строка из лога': None
+                    })
                     continue
 
                 # Находим наиболее похожую аномалию и все её проблемы
@@ -86,20 +94,25 @@ class MLLogAnalyzer:
                     problem_id = ap["ID проблемы"]
                     problem_text = ap["Проблема"]
 
-                    # Ищем ERROR строки, где текст совпадает с проблемой
+                    # Ищем ERROR строки с ТОЧНЫМ совпадением
                     problem_rows = logs_df[
                         (logs_df["level"] == "ERROR") &
-                        (logs_df["text"].str.contains(str(problem_text), na=False))
+                        (logs_df["text"].isin([problem_text]))  # ← Точное совпадение!
                     ]
 
                     for _, problem_row in problem_rows.iterrows():
-                        # Формат точно соответствует ValidationCases.xlsx
+                        # Формат : дата + уровень + источник + текст
                         # Используем full_line если есть, иначе собираем из частей
                         if 'full_line' in problem_row and pd.notna(problem_row['full_line']):
                             full_log_line = problem_row['full_line']
                         else:
-                            # Собираем полную строку из компонентов
-                            full_log_line = f"{problem_row['datetime']} {problem_row['level']} {problem_row['text']}"
+                            # Собираем полную строку с источником 
+                            source = problem_row.get('source', '')
+                            if source and source != 'unknown':
+                                full_log_line = f"{problem_row['datetime']} {problem_row['level']} {source}: {problem_row['text']}"
+                            else:
+                                # Если источника нет, формат без него
+                                full_log_line = f"{problem_row['datetime']} {problem_row['level']} {problem_row['text']}"
                         
                         results.append({
                             'ID аномалии': anomaly_id,
