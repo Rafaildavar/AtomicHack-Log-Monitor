@@ -113,15 +113,26 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                 scenario_name = os.path.basename(file_dir)
                 anomalies_files.append((scenario_name, anomalies_path))
 
-        logger.info(f"Найдено сценариев: {len(anomalies_files)}")
+        logger.info(f"Найдено сценариев с собственными словарями: {len(anomalies_files)}")
 
+        # Если словари не найдены, используем дефолтный из services
         if not anomalies_files:
-            await message.answer(
-                "⚠️ Словари аномалий не найдены.\n"
-                "Убедитесь, что в файле есть папки с файлами anomalies_problems.csv."
+            default_anomalies_path = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), 
+                'services', 
+                'anomalies_problems.csv'
             )
-            await state.clear()
-            return
+            
+            if os.path.exists(default_anomalies_path):
+                logger.info(f"Используем дефолтный словарь аномалий: {default_anomalies_path}")
+                anomalies_files.append(("default", default_anomalies_path))
+            else:
+                await message.answer(
+                    "⚠️ Словарь аномалий не найден.\n"
+                    f"Ожидается файл: {default_anomalies_path}"
+                )
+                await state.clear()
+                return
 
         # ШАГ 2: Обрабатываем каждый сценарий
         all_results = []
@@ -135,8 +146,14 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                 # Находим логи для этого сценария
                 scenario_logs = []
                 if file_path.endswith('.zip'):
-                    # Ищем файлы из той же папки сценария
-                    for root, dirs, files in os.walk(os.path.dirname(anomalies_file)):
+                    # Если используем дефолтный словарь - обрабатываем все логи из zip
+                    if scenario_name == "default":
+                        search_dir = extract_dir
+                    else:
+                        # Ищем файлы из той же папки сценария
+                        search_dir = os.path.dirname(anomalies_file)
+                    
+                    for root, dirs, files in os.walk(search_dir):
                         for file in files:
                             if file.endswith('.txt') or file.endswith('.log'):
                                 log_path = os.path.join(root, file)
@@ -152,6 +169,13 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                                             parts = line_stripped.split(' ', 2)
                                             if len(parts) >= 3:
                                                 dt, level, rest = parts[0], parts[1], parts[2]
+                                                
+                                                # Нормализуем уровень (убираем лишние символы и приводим к верхнему регистру)
+                                                level = level.strip().upper()
+                                                if 'WARNING' in level:
+                                                    level = 'WARNING'
+                                                elif 'ERROR' in level:
+                                                    level = 'ERROR'
                                                 
                                                 # Извлекаем source если есть (формат: "source: текст")
                                                 if ':' in rest:
@@ -185,6 +209,13 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                                 parts = line_stripped.split(' ', 2)
                                 if len(parts) >= 3:
                                     dt, level, rest = parts[0], parts[1], parts[2]
+                                    
+                                    # Нормализуем уровень (убираем лишние символы и приводим к верхнему регистру)
+                                    level = level.strip().upper()
+                                    if 'WARNING' in level:
+                                        level = 'WARNING'
+                                    elif 'ERROR' in level:
+                                        level = 'ERROR'
                                     
                                     # Извлекаем source если есть (формат: "source: текст")
                                     if ':' in rest:

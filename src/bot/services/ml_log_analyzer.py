@@ -53,6 +53,23 @@ class MLLogAnalyzer:
         # Получаем эмбеддинги известных аномалий
         known_anomalies = anomalies_problems_df["Аномалия"].astype(str).tolist()
         anomaly_embeddings = self.model.encode(known_anomalies, normalize_embeddings=True)
+        
+        logger.info(f"Начинаем анализ: {len(logs_df)} строк логов, {len(known_anomalies)} известных аномалий")
+        warning_count = len(logs_df[logs_df["level"] == "WARNING"])
+        error_count = len(logs_df[logs_df["level"] == "ERROR"])
+        logger.info(f"В логах: {warning_count} WARNING, {error_count} ERROR")
+        
+        # Выводим примеры для отладки
+        if warning_count > 0:
+            sample_warning = logs_df[logs_df["level"] == "WARNING"].iloc[0]
+            logger.info(f"Пример WARNING: text='{sample_warning['text']}'")
+        if error_count > 0:
+            sample_error = logs_df[logs_df["level"] == "ERROR"].iloc[0]
+            logger.info(f"Пример ERROR: text='{sample_error['text']}'")
+        if len(known_anomalies) > 0:
+            logger.info(f"Пример аномалии из словаря: '{known_anomalies[0]}'")
+            sample_problem = anomalies_problems_df.iloc[0]
+            logger.info(f"Пример проблемы из словаря: '{sample_problem['Проблема']}'")
 
         # Анализируем каждую WARNING строку
         for _, row in logs_df.iterrows():
@@ -83,22 +100,30 @@ class MLLogAnalyzer:
                 # Находим наиболее похожую аномалию и все её проблемы
                 matched_anomaly = anomalies_problems_df.iloc[best_idx]
                 matched_text = matched_anomaly["Аномалия"]
+                
+                logger.debug(f"WARNING сопоставлен с аномалией: {matched_text[:50]}... (score: {best_score:.3f})")
 
                 # Получаем все проблемы для этой аномалии
                 related_problems = anomalies_problems_df[
                     anomalies_problems_df["Аномалия"] == matched_text
                 ]
+                
+                logger.debug(f"Найдено {len(related_problems)} связанных проблем")
 
                 for _, ap in related_problems.iterrows():
                     anomaly_id = ap["ID аномалии"]
                     problem_id = ap["ID проблемы"]
                     problem_text = ap["Проблема"]
+                    
+                    logger.debug(f"Ищем ERROR с текстом: '{problem_text}'")
 
                     # Ищем ERROR строки с ТОЧНЫМ совпадением
                     problem_rows = logs_df[
                         (logs_df["level"] == "ERROR") &
                         (logs_df["text"].isin([problem_text]))  # ← Точное совпадение!
                     ]
+                    
+                    logger.debug(f"Найдено {len(problem_rows)} совпадающих ERROR строк")
 
                     for _, problem_row in problem_rows.iterrows():
                         # Формат : дата + уровень + источник + текст

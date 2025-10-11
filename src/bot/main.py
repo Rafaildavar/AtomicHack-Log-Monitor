@@ -19,7 +19,7 @@ async def main() -> None:
     
     # Устанавливаем переменные окружения для увеличения таймаутов aiohttp
     # Это помогает при загрузке больших файлов (до 20MB)
-    os.environ.setdefault('AIOHTTP_CLIENT_TIMEOUT', '300')  # 5 минут
+    os.environ.setdefault('AIOHTTP_CLIENT_TIMEOUT', '600')  # 10 минут
     
     # Создаем бота с настройками по умолчанию
     bot = Bot(
