@@ -71,7 +71,7 @@ def find_anomaly_problem_chain_transform(VC: pd.DataFrame,anomalies_problems: pd
                         'ID проблемы': problem_id,
                         'Файл с проблемой': problem_row['filename'],
                         '№ строки': problem_row['line_number'],
-                        'Строка из лога': problem_row['text']
+                        'Строка из лога': f'{problem_row['datetime']} {problem_row['level']} {problem_row['source']}: {problem_row['text']}'
                     })
 
     return pd.DataFrame(results)
