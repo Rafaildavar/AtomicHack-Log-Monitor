@@ -141,10 +141,10 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
 
                                     # Парсим строки и фильтруем WARNING/ERROR
                                     for line_num, line in enumerate(lines, 1):
-                                        line = line.strip()
-                                        if 'WARNING' in line.upper() or 'ERROR' in line.upper():
+                                        line_stripped = line.strip()
+                                        if 'WARNING' in line_stripped.upper() or 'ERROR' in line_stripped.upper():
                                             # Простой парсинг строки
-                                            parts = line.split(' ', 2)
+                                            parts = line_stripped.split(' ', 2)
                                             if len(parts) >= 3:
                                                 dt, level, text = parts[0], parts[1], parts[2]
                                                 scenario_logs.append({
@@ -152,6 +152,7 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                                                     'level': level,
                                                     'source': 'unknown',
                                                     'text': text,
+                                                    'full_line': line_stripped,  # Полная строка для вывода
                                                     'filename': file,
                                                     'line_number': line_num
                                                 })
@@ -164,9 +165,9 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                             lines = f.readlines()
 
                         for line_num, line in enumerate(lines, 1):
-                            line = line.strip()
-                            if 'WARNING' in line.upper() or 'ERROR' in line.upper():
-                                parts = line.split(' ', 2)
+                            line_stripped = line.strip()
+                            if 'WARNING' in line_stripped.upper() or 'ERROR' in line_stripped.upper():
+                                parts = line_stripped.split(' ', 2)
                                 if len(parts) >= 3:
                                     dt, level, text = parts[0], parts[1], parts[2]
                                     scenario_logs.append({
@@ -174,6 +175,7 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                                         'level': level,
                                         'source': 'unknown',
                                         'text': text,
+                                        'full_line': line_stripped,  # Полная строка для вывода
                                         'filename': os.path.basename(file_path),
                                         'line_number': line_num
                                     })
@@ -230,14 +232,7 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                 f"• Обработано сценариев: {len(anomalies_files)}\n"
                 f"• Найдено проблем: {len(final_results)}\n"
                 f"• Уникальных аномалий: {unique_anomalies}\n"
-                f"• Уникальных типов проблем: {unique_problems}\n\n"
-                f"📄 Формат Excel файла соответствует ValidationCases.xlsx:\n"
-                f"• ID сценария\n"
-                f"• ID аномалии\n"
-                f"• ID проблемы\n"
-                f"• Файл с проблемой\n"
-                f"• № строки\n"
-                f"• Строка из лога",
+                f"• Уникальных типов проблем: {unique_problems}\n\n",
                 reply_markup=build_main_menu_keyboard()
             )
         else:

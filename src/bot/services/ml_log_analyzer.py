@@ -94,12 +94,19 @@ class MLLogAnalyzer:
 
                     for _, problem_row in problem_rows.iterrows():
                         # Формат точно соответствует ValidationCases.xlsx
+                        # Используем full_line если есть, иначе собираем из частей
+                        if 'full_line' in problem_row and pd.notna(problem_row['full_line']):
+                            full_log_line = problem_row['full_line']
+                        else:
+                            # Собираем полную строку из компонентов
+                            full_log_line = f"{problem_row['datetime']} {problem_row['level']} {problem_row['text']}"
+                        
                         results.append({
                             'ID аномалии': anomaly_id,
                             'ID проблемы': problem_id,
                             'Файл с проблемой': problem_row['filename'],
                             '№ строки': problem_row['line_number'],
-                            'Строка из лога': problem_row['text']
+                            'Строка из лога': full_log_line
                         })
 
         result_df = pd.DataFrame(results)

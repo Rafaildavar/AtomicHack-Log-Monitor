@@ -2,12 +2,11 @@
 
 import asyncio
 import logging
+import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
-from aiohttp import ClientTimeout
 
 from .config import settings
 from .handlers import menu_router, start_router, upload_router
@@ -18,18 +17,14 @@ async def main() -> None:
 
     logging.basicConfig(level=settings.log_level)
     
-    # Создаем сессию с увеличенным таймаутом для загрузки больших файлов
-    timeout = ClientTimeout(
-        total=300,  # Общий таймаут 5 минут
-        connect=60,  # Таймаут подключения 1 минута
-        sock_read=180  # Таймаут чтения сокета 3 минуты
-    )
-    session = AiohttpSession(timeout=timeout)
+    # Устанавливаем переменные окружения для увеличения таймаутов aiohttp
+    # Это помогает при загрузке больших файлов (до 20MB)
+    os.environ.setdefault('AIOHTTP_CLIENT_TIMEOUT', '300')  # 5 минут
     
+    # Создаем бота с настройками по умолчанию
     bot = Bot(
         token=settings.bot_token,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-        session=session
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()
 
