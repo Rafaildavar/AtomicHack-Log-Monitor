@@ -99,9 +99,12 @@ class LogParser:
                 for file_info in zip_ref.filelist:
                     logger.info(f"Проверка файла: {file_info.filename}")
 
-                    # Проверяем что файл является txt или log
-                    if file_info.filename.endswith('.txt') or file_info.filename.endswith('.log'):
+                    # Извлекаем txt, log файлы и CSV файлы с аномалиями
+                    if (file_info.filename.endswith('.txt') or
+                        file_info.filename.endswith('.log') or
+                        file_info.filename.endswith('anomalies_problems.csv')):
                         try:
+                            # Извлекаем файл с сохранением структуры папок
                             extracted_path = zip_ref.extract(file_info, extract_dir)
                             extracted_files.append(extracted_path)
                             logger.info(f"Извлечен файл: {extracted_path}")
@@ -157,7 +160,7 @@ class LogParser:
                     for line_num, line in enumerate(lines, 1):
                         parsed = self._parse_log_line(line.strip())
                         if parsed:
-                            parsed['filename'] = Path(file_path).name
+                            parsed['filename'] = file_path  # Сохраняем полный путь
                             parsed['line_number'] = line_num
                             all_logs.append(parsed)
                 except Exception as e2:

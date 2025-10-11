@@ -1,134 +1,207 @@
-"""Сервис для хранения истории анализа логов."""
+"""Простой сервис для анализа файлов и создания Excel отчетов."""
 
-import json
+import pandas as pd
 import os
-from datetime import datetime
-from typing import Dict, List
-from dataclasses import dataclass, asdict
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-@dataclass
-class AnalysisRecord:
-    """Запись анализа логов."""
-    user_id: int
-    file_name: str
-    timestamp: str
-    total_lines: int
-    error_count: int
-    warning_count: int
-    info_count: int
-    sources: Dict[str, int]
-    top_messages: Dict[str, int]
-    level_distribution: Dict[str, int]
+class SimpleFileAnalyzer:
+    """Простой анализатор файлов для создания Excel отчетов."""
 
+    def __init__(self):
+        """Инициализация анализатора."""
+        pass
 
-class AnalysisHistory:
-    """Сервис для управления историей анализа."""
+    def analyze_file(self, file_path: str) -> dict:
+        """Анализирует файл и возвращает статистику.
 
-    def __init__(self, storage_file: str = "data/analysis_history.json"):
-        self.storage_file = storage_file
-        self._ensure_storage_dir()
-        self._history: List[AnalysisRecord] = []
-        self._load_history()
+        Args:
+            file_path: Путь к файлу
 
-    def _ensure_storage_dir(self):
-        """Создает директорию для хранения данных если она не существует."""
-        os.makedirs(os.path.dirname(self.storage_file), exist_ok=True)
-
-    def _load_history(self):
-        """Загружает историю из файла."""
-        if os.path.exists(self.storage_file):
-            try:
-                with open(self.storage_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    self._history = [
-                        AnalysisRecord(
-                            user_id=record['user_id'],
-                            file_name=record['file_name'],
-                            timestamp=record['timestamp'],
-                            total_lines=record['total_lines'],
-                            error_count=record['error_count'],
-                            warning_count=record['warning_count'],
-                            sources=record['sources'],
-                            top_errors=record['top_errors']
-                        ) for record in data
-                    ]
-            except Exception:
-                self._history = []
-
-    def _save_history(self):
-        """Сохраняет историю в файл."""
+        Returns:
+            Словарь со статистикой анализа
+        """
         try:
-            with open(self.storage_file, 'w', encoding='utf-8') as f:
-                json.dump([asdict(record) for record in self._history], f, indent=2, ensure_ascii=False)
-        except Exception:
-            pass
+            # Определяем тип файла
+            file_extension = os.path.splitext(file_path)[1].lower()
 
-    def add_record(self, user_id: int, analysis: Dict, file_name: str):
-        """Добавляет новую запись анализа."""
-        record = AnalysisRecord(
-            user_id=user_id,
-            file_name=file_name,
-            timestamp=datetime.now().isoformat(),
-            total_lines=analysis.get('total_lines', 0),
-            error_count=analysis.get('error_count', 0),
-            warning_count=analysis.get('warning_count', 0),
-            info_count=analysis.get('info_count', 0),
-            sources=analysis.get('sources', {}),
-            top_messages=analysis.get('top_messages', {}),
-            level_distribution=analysis.get('level_distribution', {})
-        )
+            if file_extension == '.csv':
+                return self._analyze_csv(file_path)
+            elif file_extension in ['.txt', '.log']:
+                return self._analyze_text(file_path)
+            else:
+                return self._analyze_generic(file_path)
 
-        self._history.append(record)
-        self._save_history()
-
-    def get_user_history(self, user_id: int, limit: int = 10) -> List[AnalysisRecord]:
-        """Получает историю анализа для пользователя."""
-        user_records = [r for r in self._history if r.user_id == user_id]
-        return user_records[-limit:] if user_records else []
-
-    def get_statistics(self, user_id: int = None) -> Dict:
-        """Получает статистику по анализам."""
-        if user_id:
-            records = [r for r in self._history if r.user_id == user_id]
-        else:
-            records = self._history
-
-        if not records:
+        except Exception as e:
+            logger.error(f"Ошибка анализа файла {file_path}: {e}")
             return {
-                'total_analyses': 0,
-                'total_errors': 0,
-                'total_warnings': 0,
-                'avg_errors_per_analysis': 0,
-                'most_common_sources': {},
-                'most_common_errors': {}
+                'file_name': os.path.basename(file_path),
+                'file_type': 'unknown',
+                'total_lines': 0,
+                'error': str(e)
             }
 
-        total_analyses = len(records)
-        total_errors = sum(r.error_count for r in records)
-        total_warnings = sum(r.warning_count for r in records)
+    def _analyze_csv(self, file_path: str) -> dict:
+        """Анализирует CSV файл."""
+        try:
+            df = pd.read_csv(file_path, sep=';')
+            return {
+                'file_name': os.path.basename(file_path),
+                'file_type': 'csv',
+                'total_lines': len(df),
+                'columns': list(df.columns),
+                'sample_data': df.head(3).to_dict('records') if len(df) > 0 else []
+            }
+        except Exception as e:
+            return {
+                'file_name': os.path.basename(file_path),
+                'file_type': 'csv',
+                'total_lines': 0,
+                'error': str(e)
+            }
 
-        # Собираем статистику по источникам
-        all_sources = {}
-        for record in records:
-            for source, count in record.sources.items():
-                all_sources[source] = all_sources.get(source, 0) + count
+    def _analyze_text(self, file_path: str) -> dict:
+        """Анализирует текстовый файл."""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
 
-        # Собираем статистику по ошибкам
-        all_errors = {}
-        for record in records:
-            for error, count in record.top_errors.items():
-                all_errors[error] = all_errors.get(error, 0) + count
+            # Подсчет строк по уровням логирования
+            error_count = sum(1 for line in lines if 'ERROR' in line.upper())
+            warning_count = sum(1 for line in lines if 'WARNING' in line.upper())
+            info_count = sum(1 for line in lines if 'INFO' in line.upper())
 
-        # Сортируем и берем топ
-        most_common_sources = dict(sorted(all_sources.items(), key=lambda x: x[1], reverse=True)[:5])
-        most_common_errors = dict(sorted(all_errors.items(), key=lambda x: x[1], reverse=True)[:5])
+            # Определяем источники (простая эвристика)
+            sources = {}
+            for line in lines[:1000]:  # Анализируем первые 1000 строк
+                if ':' in line:
+                    source = line.split(':')[0].strip()
+                    sources[source] = sources.get(source, 0) + 1
 
-        return {
-            'total_analyses': total_analyses,
-            'total_errors': total_errors,
-            'total_warnings': total_warnings,
-            'avg_errors_per_analysis': round(total_errors / total_analyses, 2) if total_analyses > 0 else 0,
-            'most_common_sources': most_common_sources,
-            'most_common_errors': most_common_errors
-        }
+            return {
+                'file_name': os.path.basename(file_path),
+                'file_type': 'text',
+                'total_lines': len(lines),
+                'error_count': error_count,
+                'warning_count': warning_count,
+                'info_count': info_count,
+                'top_sources': dict(sorted(sources.items(), key=lambda x: x[1], reverse=True)[:5])
+            }
+        except Exception as e:
+            return {
+                'file_name': os.path.basename(file_path),
+                'file_type': 'text',
+                'total_lines': 0,
+                'error': str(e)
+            }
+
+    def _analyze_generic(self, file_path: str) -> dict:
+        """Анализирует любой файл."""
+        try:
+            # Простая статистика файла
+            file_size = os.path.getsize(file_path)
+            with open(file_path, 'rb') as f:
+                content = f.read()
+                total_lines = content.count(b'\n')
+
+            return {
+                'file_name': os.path.basename(file_path),
+                'file_type': 'binary',
+                'total_lines': total_lines,
+                'file_size': file_size
+            }
+        except Exception as e:
+            return {
+                'file_name': os.path.basename(file_path),
+                'file_type': 'unknown',
+                'error': str(e)
+            }
+
+    def create_excel_report(self, analysis_results: list, output_path: str = "reports/file_analysis.xlsx") -> str:
+        """Создает Excel отчет из результатов анализа.
+
+        Args:
+            analysis_results: Список результатов анализа файлов
+            output_path: Путь для сохранения Excel файла
+
+        Returns:
+            Путь к созданному файлу
+        """
+        try:
+            # Создаем директорию если нужно
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+            # Создаем DataFrame из результатов
+            if not analysis_results:
+                # Создаем пустой отчет
+                report_data = [{
+                    'Файл': 'Нет данных',
+                    'Тип': 'Нет данных',
+                    'Всего строк': 0,
+                    'Статус': 'Анализ не выполнен'
+                }]
+            else:
+                report_data = []
+                for result in analysis_results:
+                    if 'error' in result:
+                        # Файл с ошибкой
+                        report_data.append({
+                            'Файл': result['file_name'],
+                            'Тип': result.get('file_type', 'unknown'),
+                            'Всего строк': result.get('total_lines', 0),
+                            'Статус': f"Ошибка: {result['error']}"
+                        })
+                    elif 'results' in result and result['results']:
+                        # ML анализ с результатами
+                        base_info = {
+                            'Файл': result['file_name'],
+                            'Тип анализа': result.get('analysis_type', 'ml_anomaly_detection'),
+                            'Всего сценариев': result.get('total_scenarios', 0),
+                            'Всего проблем': result.get('total_problems', 0)
+                        }
+                        report_data.append(base_info)
+
+                        # Добавляем детальные результаты аномалий
+                        for anomaly in result['results']:
+                            report_data.append({
+                                'Сценарий': anomaly.get('Сценарий', ''),
+                                'ID аномалии': anomaly.get('ID аномалии', ''),
+                                'ID проблемы': anomaly.get('ID проблемы', ''),
+                                'Файл с проблемой': anomaly.get('Файл с проблемой', ''),
+                                '№ строки': anomaly.get('№ строки', ''),
+                                'Строка из лога': anomaly.get('Строка из лога', ''),
+                                'Уверенность': anomaly.get('Уверенность', ''),
+                                'Аномалия': anomaly.get('Аномалия', ''),
+                                'Статус': anomaly.get('Статус', '')
+                            })
+                    else:
+                        # Обычный анализ файла
+                        base_info = {
+                            'Файл': result['file_name'],
+                            'Тип': result.get('file_type', 'unknown'),
+                            'Всего строк': result.get('total_lines', 0)
+                        }
+
+                        # Добавляем специфичную информацию
+                        if result.get('file_type') == 'csv':
+                            base_info['Колонки'] = ', '.join(result.get('columns', []))
+                            base_info['Пример данных'] = str(result.get('sample_data', []))
+                        elif result.get('file_type') == 'text':
+                            base_info['Ошибок'] = result.get('error_count', 0)
+                            base_info['Предупреждений'] = result.get('warning_count', 0)
+                            base_info['Информационных'] = result.get('info_count', 0)
+
+                        report_data.append(base_info)
+
+            # Создаем DataFrame и сохраняем в Excel
+            df = pd.DataFrame(report_data)
+            df.to_excel(output_path, index=False, engine='openpyxl')
+
+            logger.info(f"Excel отчет создан: {output_path}")
+            return output_path
+
+        except Exception as e:
+            logger.error(f"Ошибка создания Excel отчета: {e}")
+            return ""
