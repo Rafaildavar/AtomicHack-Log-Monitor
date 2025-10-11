@@ -120,7 +120,7 @@ class SimpleFileAnalyzer:
             }
 
     def create_excel_report(self, analysis_results: list, output_path: str = "reports/file_analysis.xlsx") -> str:
-        """Создает Excel отчет из результатов анализа.
+        """Создает Excel отчет из результатов анализа в формате ValidationCases.xlsx.
 
         Args:
             analysis_results: Список результатов анализа файлов
@@ -133,75 +133,60 @@ class SimpleFileAnalyzer:
             # Создаем директорию если нужно
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-            # Создаем DataFrame из результатов
+            # Создаем DataFrame из результатов в формате ValidationCases
             if not analysis_results:
                 # Создаем пустой отчет
                 report_data = [{
-                    'Файл': 'Нет данных',
-                    'Тип': 'Нет данных',
-                    'Всего строк': 0,
-                    'Статус': 'Анализ не выполнен'
+                    'ID сценария': 0,
+                    'ID аномалии': 0,
+                    'ID проблемы': 0,
+                    'Файл с проблемой': 'Нет данных',
+                    '№ строки': 0,
+                    'Строка из лога': 'Анализ не выполнен'
                 }]
             else:
                 report_data = []
+                scenario_id_mapping = {}  # Для сопоставления имени сценария с ID
+                current_scenario_id = 1
+                
                 for result in analysis_results:
-                    if 'error' in result:
-                        # Файл с ошибкой
-                        report_data.append({
-                            'Файл': result['file_name'],
-                            'Тип': result.get('file_type', 'unknown'),
-                            'Всего строк': result.get('total_lines', 0),
-                            'Статус': f"Ошибка: {result['error']}"
-                        })
-                    elif 'results' in result and result['results']:
-                        # ML анализ с результатами
-                        base_info = {
-                            'Файл': result['file_name'],
-                            'Тип анализа': result.get('analysis_type', 'ml_anomaly_detection'),
-                            'Всего сценариев': result.get('total_scenarios', 0),
-                            'Всего проблем': result.get('total_problems', 0)
-                        }
-                        report_data.append(base_info)
-
-                        # Добавляем детальные результаты аномалий
+                    if 'results' in result and result['results']:
+                        # ML анализ с результатами - основной режим
                         for anomaly in result['results']:
+                            # Получаем имя сценария
+                            scenario_name = anomaly.get('Сценарий', 'Unknown')
+                            
+                            # Назначаем ID сценарию если его еще нет
+                            if scenario_name not in scenario_id_mapping:
+                                scenario_id_mapping[scenario_name] = current_scenario_id
+                                current_scenario_id += 1
+                            
+                            scenario_id = scenario_id_mapping[scenario_name]
+                            
+                            # Формируем строку в точном формате ValidationCases.xlsx
                             report_data.append({
-                                'Сценарий': anomaly.get('Сценарий', ''),
+                                'ID сценария': scenario_id,
                                 'ID аномалии': anomaly.get('ID аномалии', ''),
                                 'ID проблемы': anomaly.get('ID проблемы', ''),
                                 'Файл с проблемой': anomaly.get('Файл с проблемой', ''),
                                 '№ строки': anomaly.get('№ строки', ''),
-                                'Строка из лога': anomaly.get('Строка из лога', ''),
-                                'Уверенность': anomaly.get('Уверенность', ''),
-                                'Аномалия': anomaly.get('Аномалия', ''),
-                                'Статус': anomaly.get('Статус', '')
+                                'Строка из лога': anomaly.get('Строка из лога', '')
                             })
-                    else:
-                        # Обычный анализ файла
-                        base_info = {
-                            'Файл': result['file_name'],
-                            'Тип': result.get('file_type', 'unknown'),
-                            'Всего строк': result.get('total_lines', 0)
-                        }
 
-                        # Добавляем специфичную информацию
-                        if result.get('file_type') == 'csv':
-                            base_info['Колонки'] = ', '.join(result.get('columns', []))
-                            base_info['Пример данных'] = str(result.get('sample_data', []))
-                        elif result.get('file_type') == 'text':
-                            base_info['Ошибок'] = result.get('error_count', 0)
-                            base_info['Предупреждений'] = result.get('warning_count', 0)
-                            base_info['Информационных'] = result.get('info_count', 0)
-
-                        report_data.append(base_info)
-
-            # Создаем DataFrame и сохраняем в Excel
+            # Создаем DataFrame с точными колонками как в ValidationCases.xlsx
             df = pd.DataFrame(report_data)
+            
+            # Убеждаемся, что колонки в правильном порядке
+            column_order = ['ID сценария', 'ID аномалии', 'ID проблемы', 
+                          'Файл с проблемой', '№ строки', 'Строка из лога']
+            df = df[column_order]
+            
+            # Сохраняем в Excel
             df.to_excel(output_path, index=False, engine='openpyxl')
 
-            logger.info(f"Excel отчет создан: {output_path}")
+            logger.info(f"Excel отчет создан: {output_path} ({len(df)} строк)")
             return output_path
 
         except Exception as e:
-            logger.error(f"Ошибка создания Excel отчета: {e}")
+            logger.error(f"Ошибка создания Excel отчета: {e}", exc_info=True)
             return ""

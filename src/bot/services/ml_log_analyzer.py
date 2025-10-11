@@ -67,18 +67,9 @@ class MLLogAnalyzer:
                 best_idx = cosine_scores.argmax().item()
                 best_score = cosine_scores[best_idx].item()
 
-                # Если сходство ниже порога — помечаем как неопределенную
+                # Если сходство ниже порога — пропускаем (не добавляем в результат)
                 if best_score < self.similarity_threshold:
-                    results.append({
-                        'ID аномалии': None,
-                        'Аномалия': text,
-                        'Уверенность': round(best_score, 3),
-                        'ID проблемы': None,
-                        'Файл с проблемой': row.get('filename', ''),
-                        '№ строки': row.get('line_number', 0),
-                        'Строка из лога': text,
-                        'Статус': 'Неопределенная аномалия'
-                    })
+                    logger.debug(f"Аномалия с низкой уверенностью пропущена: {text[:50]}... (score: {best_score})")
                     continue
 
                 # Находим наиболее похожую аномалию и все её проблемы
@@ -102,10 +93,9 @@ class MLLogAnalyzer:
                     ]
 
                     for _, problem_row in problem_rows.iterrows():
+                        # Формат точно соответствует ValidationCases.xlsx
                         results.append({
                             'ID аномалии': anomaly_id,
-                            'Аномалия': text,
-                            'Уверенность': round(best_score, 3),
                             'ID проблемы': problem_id,
                             'Файл с проблемой': problem_row['filename'],
                             '№ строки': problem_row['line_number'],
@@ -131,25 +121,18 @@ class MLLogAnalyzer:
                 'total_problems': 0,
                 'unique_anomalies': 0,
                 'unique_problems': 0,
-                'avg_confidence': 0.0,
-                'uncertain_anomalies': 0
+                'unique_files': 0
             }
 
         # Статистика по проблемам
         total_problems = len(results_df)
         unique_anomalies = len(results_df['ID аномалии'].unique()) if 'ID аномалии' in results_df.columns else 0
         unique_problems = len(results_df['ID проблемы'].unique()) if 'ID проблемы' in results_df.columns else 0
-
-        # Средняя уверенность
-        avg_confidence = results_df['Уверенность'].mean() if 'Уверенность' in results_df.columns else 0.0
-
-        # Количество неопределенных аномалий
-        uncertain_anomalies = len(results_df[results_df['Статус'] == 'Неопределенная аномалия']) if 'Статус' in results_df.columns else 0
+        unique_files = len(results_df['Файл с проблемой'].unique()) if 'Файл с проблемой' in results_df.columns else 0
 
         return {
             'total_problems': total_problems,
             'unique_anomalies': unique_anomalies,
             'unique_problems': unique_problems,
-            'avg_confidence': round(avg_confidence, 3),
-            'uncertain_anomalies': uncertain_anomalies
+            'unique_files': unique_files
         }
