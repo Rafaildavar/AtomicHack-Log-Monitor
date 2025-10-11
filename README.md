@@ -419,7 +419,7 @@ ID аномалии;Аномалия;ID проблемы;Проблема
 
 ## Контакты
 
-**Команда:** Team Atomic  
+**Команда:** Black Lotus  
 **Хакатон:** AtomicHack  
 **GitHub:** https://github.com/Rafaildavar/AtomicHack-Log-Monitor
 
