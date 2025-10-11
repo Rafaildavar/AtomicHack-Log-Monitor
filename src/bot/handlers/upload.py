@@ -217,31 +217,41 @@ async def handle_file_upload(message: Message, state: FSMContext) -> None:
                 'total_problems': len(final_results),
                 'results': final_results.to_dict('records')
             }])
-        else:
-            excel_path = None
-
-        if excel_path:
-            excel_file = FSInputFile(excel_path)
-            await message.answer_document(
-                excel_file,
-                caption=f"📊 ML анализ найденных проблем (Excel) - {len(final_results)} аномалий"
-            )
-
-            # Получаем статистику
-            unique_anomalies = len(final_results['ID аномалии'].unique()) if 'ID аномалии' in final_results.columns else 0
-            unique_problems = len(final_results['ID проблемы'].unique()) if 'ID проблемы' in final_results.columns else 0
             
+            if excel_path:
+                excel_file = FSInputFile(excel_path)
+                await message.answer_document(
+                    excel_file,
+                    caption=f"📊 ML анализ найденных проблем (Excel) - {len(final_results)} аномалий"
+                )
+
+                # Получаем статистику
+                unique_anomalies = len(final_results['ID аномалии'].unique()) if 'ID аномалии' in final_results.columns else 0
+                unique_problems = len(final_results['ID проблемы'].unique()) if 'ID проблемы' in final_results.columns else 0
+                
+                await message.answer(
+                    f"✅ Анализ завершен!\n\n"
+                    f"📊 Результаты:\n"
+                    f"• Обработано сценариев: {len(anomalies_files)}\n"
+                    f"• Найдено проблем: {len(final_results)}\n"
+                    f"• Уникальных аномалий: {unique_anomalies}\n"
+                    f"• Уникальных типов проблем: {unique_problems}\n\n",
+                    reply_markup=build_main_menu_keyboard()
+                )
+            else:
+                await message.answer("❌ Ошибка при создании Excel отчета.")
+        else:
+            # Аномалий не найдено - это нормально!
             await message.answer(
                 f"✅ Анализ завершен!\n\n"
                 f"📊 Результаты:\n"
                 f"• Обработано сценариев: {len(anomalies_files)}\n"
-                f"• Найдено проблем: {len(final_results)}\n"
-                f"• Уникальных аномалий: {unique_anomalies}\n"
-                f"• Уникальных типов проблем: {unique_problems}\n\n",
+                f"• Найдено проблем: 0\n"
+                f"• Уникальных аномалий: 0\n"
+                f"• Уникальных типов проблем: 0\n\n"
+                f"ℹ️ В загруженных логах не обнаружено проблем, соответствующих известным аномалиям.",
                 reply_markup=build_main_menu_keyboard()
             )
-        else:
-            await message.answer("❌ Ошибка при создании Excel отчета.")
 
     except Exception as e:
         logger.error(f"Ошибка при обработке файла: {e}", exc_info=True)
