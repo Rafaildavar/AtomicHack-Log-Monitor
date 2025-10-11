@@ -119,17 +119,23 @@ class SimpleFileAnalyzer:
                 'error': str(e)
             }
 
-    def create_excel_report(self, analysis_results: list, output_path: str = "reports/file_analysis.xlsx") -> str:
+    def create_excel_report(self, analysis_results: list, output_path: str = None) -> str:
         """Создает Excel отчет из результатов анализа в формате ValidationCases.xlsx.
 
         Args:
             analysis_results: Список результатов анализа файлов
-            output_path: Путь для сохранения Excel файла
+            output_path: Путь для сохранения Excel файла (если None, генерируется уникальное имя)
 
         Returns:
             Путь к созданному файлу
         """
         try:
+            # Генерируем уникальное имя файла с временной меткой, если путь не указан
+            if output_path is None:
+                import time
+                timestamp = int(time.time())
+                output_path = f"reports/file_analysis_{timestamp}.xlsx"
+            
             # Создаем директорию если нужно
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
@@ -181,8 +187,43 @@ class SimpleFileAnalyzer:
                           'Файл с проблемой', '№ строки', 'Строка из лога']
             df = df[column_order]
             
-            # Сохраняем в Excel
+            # Сохраняем в Excel с форматированием
+            from openpyxl import load_workbook
+            from openpyxl.styles import Alignment, PatternFill, Font
+            
+            # Сначала сохраняем DataFrame
             df.to_excel(output_path, index=False, engine='openpyxl')
+            
+            # Загружаем workbook для форматирования
+            wb = load_workbook(output_path)
+            ws = wb.active
+            
+            # Цвет заголовков (голубой как на скриншоте)
+            header_fill = PatternFill(start_color='B4C7E7', end_color='B4C7E7', fill_type='solid')
+            header_font = Font(bold=True, color='000000')
+            
+            # Форматируем заголовки
+            for cell in ws[1]:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+            
+            # Выравнивание по центру для всех ячеек
+            for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+                for cell in row:
+                    cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            
+            # Настраиваем ширину колонок
+            ws.column_dimensions['A'].width = 12  # ID сценария
+            ws.column_dimensions['B'].width = 12  # ID аномалии
+            ws.column_dimensions['C'].width = 12  # ID проблемы
+            ws.column_dimensions['D'].width = 20  # Файл с проблемой
+            ws.column_dimensions['E'].width = 10  # № строки
+            ws.column_dimensions['F'].width = 80  # Строка из лога
+            
+            # Сохраняем отформатированный файл
+            wb.save(output_path)
+            wb.close()
 
             logger.info(f"Excel отчет создан: {output_path} ({len(df)} строк)")
             return output_path
