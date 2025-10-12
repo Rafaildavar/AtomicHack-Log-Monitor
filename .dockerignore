@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+downloads/
+reports/
+*.zip
+*.xlsx
+*.html
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# Documentation
+README.md
+LARGE_FILES_GUIDE.md
+*.pdf
+*.txt
+
+# Validation data
+ValidationCase*/
+Validation Cases/
+
