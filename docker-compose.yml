@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  atomichack-bot:
+    build: .
+    container_name: atomichack-log-monitor
+    restart: unless-stopped
+    
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - LOG_LEVEL=INFO
+      - AIOHTTP_CLIENT_TIMEOUT=600
+    
+    env_file:
+      - .env
+    
+    volumes:
+      - ./downloads:/app/downloads
+      - ./reports:/app/reports
+      - ./src/bot/services/anomalies_problems.csv:/app/src/bot/services/anomalies_problems.csv
+    
+    networks:
+      - atomichack-network
+    
+    # Ограничения ресурсов
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+networks:
+  atomichack-network:
+    driver: bridge
+
