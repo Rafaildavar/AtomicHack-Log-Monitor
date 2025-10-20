@@ -1,84 +1,124 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
-from log_to_df import logs_to_dataframe
+from loguru import logger
+from log_to_df import logs_to_dataframe, collect_all_testcases
+import sys
+
+logger.remove()
+
+logger.add(
+    "app.log",
+    level="DEBUG",
+    rotation="1 MB",  # ротация при достижении 1 МБ
+    retention="10 days",  # хранить логи 10 дней
+    compression="zip",  # сжимать старые логи
+    enqueue=True,  # потокобезопасность
+    mode="w"  # перезаписывать файл при каждом запуске
+)
 
 
-def find_anomaly_problem_chain_transform(VC: pd.DataFrame,anomalies_problems: pd.DataFrame,similarity_threshold: float = 0.7):
+
+def find_anomaly_problem_chain_transform(all_cases_df: pd.DataFrame,
+                                         anomalies_problems: pd.DataFrame,
+                                         similarity_threshold: float = 0.55):
     """
-    Ищет наиболее похожую аномалию для WARNING через семантическое сходство
-    и сопоставляет её с проблемой из словаря.
+    Находит связи между аномалиями (WARNING) и проблемами (ERROR) по семантическому сходству
+    между текстами логов и справочником аномалий/проблем.
     """
 
     results = []
-
-    # Модель эмбеддингов
     model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # Эмбеддинги известных аномалий
+    # Эмбеддинги известных аномалий из справочника
     known_anomalies = anomalies_problems["Аномалия"].astype(str).tolist()
     anomaly_embeddings = model.encode(known_anomalies, normalize_embeddings=True)
 
-    # Перебираем WARNING строки
-    for _, row in VC.iterrows():
-        if row["level"] == "WARNING":
-            text = str(row["text"]).strip()
+    # Группируем по кейсам
+    for case_id, case_df in all_cases_df.groupby("id_scenario"):
+        warnings_df = case_df[case_df["level"] == "WARNING"]
+        errors_df = case_df[case_df["level"] == "ERROR"]
 
-            # Эмбеддинг текущей строки
-            emb = model.encode(text, normalize_embeddings=True)
+        if warnings_df.empty:
+            continue
 
-            # Косинусное сходство со всеми известными аномалиями
-            cosine_scores = util.cos_sim(emb, anomaly_embeddings)[0]
-            best_idx = cosine_scores.argmax().item()
-            best_score = cosine_scores[best_idx].item()
+        for _, warn_row in warnings_df.iterrows():
+            warning_text = str(warn_row["text"]).strip()
+            warning_emb = model.encode(warning_text, normalize_embeddings=True)
 
-            # Если сходство меньше порога — пропускаем
+            # Считаем косинусное сходство с базой аномалий
+            scores = util.cos_sim(warning_emb, anomaly_embeddings)[0]
+            best_idx = scores.argmax().item()
+            best_score = scores[best_idx].item()
+
             if best_score < similarity_threshold:
+                # Не нашли уверенного совпадения
                 results.append({
+                    'id_scenario': case_id,
                     'ID аномалии': None,
-                    'Аномалия': text,
+                    'Аномалия': warning_text,
                     'Уверенность': round(best_score, 3),
                     'ID проблемы': None,
                     'Файл с проблемой': None,
                     '№ строки': None,
                     'Строка из лога': None
                 })
+                logger.debug(f"None in anomaly: {warn_row}")
                 continue
 
-            # Находим наиболее похожую аномалию и все её проблемы
+
+            # Находим аномалию и связанные проблемы
             matched_anomaly = anomalies_problems.iloc[best_idx]
-            matched_text = matched_anomaly["Аномалия"]
+            anomaly_text = matched_anomaly["Аномалия"]
+            anomaly_id = matched_anomaly["ID аномалии"]
 
             related_problems = anomalies_problems[
-                anomalies_problems["Аномалия"] == matched_text
-            ]
+                anomalies_problems["Аномалия"] == anomaly_text
+            ][["ID проблемы", "Проблема"]].drop_duplicates()
 
-            for _, ap in related_problems.iterrows():
-                anomaly_id = ap["ID аномалии"]
-                problem_id = ap["ID проблемы"]
-                problem_text = ap["Проблема"]
+            found_problem = False
 
-                # Ищем ERROR строки, где текст совпадает с проблемой
-                problem_rows = VC[
-                    (VC["level"] == "ERROR") &
-                    (VC["text"].isin([problem_text]))
-                ]
+            for _, prob in related_problems.iterrows():
+                prob_text = prob["Проблема"]
+                prob_id = prob["ID проблемы"]
 
-                for _, problem_row in problem_rows.iterrows():
-                    results.append({
-                        'ID аномалии': anomaly_id,
-                        'Аномалия': text,
-                        'Уверенность': round(best_score, 3),
-                        'ID проблемы': problem_id,
-                        'Файл с проблемой': problem_row['filename'],
-                        '№ строки': problem_row['line_number'],
-                        'Строка из лога': f'{problem_row['datetime']} {problem_row['level']} {problem_row['source']}: {problem_row['text']}'
-                    })
+                # Проверяем, есть ли такая ошибка в логах текущего кейса
+                match = errors_df[errors_df["text"].str.contains(prob_text, case=False, na=False, regex=False)]
+
+                if not match.empty:
+                    found_problem = True
+                    for _, err_row in match.iterrows():
+                        results.append({
+                            'id_scenario': case_id,
+                            'ID аномалии': anomaly_id,
+                            'Аномалия': warning_text,
+                            'Уверенность': round(best_score, 3),
+                            'ID проблемы': prob_id,
+                            'Файл с проблемой': err_row["filename"],
+                            '№ строки': err_row["line_number"],
+                            'Строка из лога': f"{err_row['datetime']} {err_row['level']} {err_row['source']}: {err_row['text']}"
+                        })
+                else:
+                    logger.debug(f"{prob_text} not in match")
+                    logger.debug(f"errors_df: {errors_df['text']}")
+
+            # Если проблема не найдена в логах — тоже сохраняем
+            if not found_problem:
+                results.append({
+                    'id_scenario': case_id,
+                    'ID аномалии': anomaly_id,
+                    'Аномалия': warning_text,
+                    'Уверенность': round(best_score, 3),
+                    'ID проблемы': None,
+                    'Файл с проблемой': None,
+                    '№ строки': None,
+                    'Строка из лога': None
+                })
+                logger.debug(f"None in problem: {warn_row}")
+
 
     return pd.DataFrame(results)
 
-
 if __name__ == '__main__':
     anomalies_problems = pd.read_csv('../Validation_Cases/ValidationCase_1/anomalies_problems.csv', sep=';')
-    VC3 = logs_to_dataframe('../Validation_Cases/ValidationCase_1')
-    result_df = find_anomaly_problem_chain_transform(VC3, anomalies_problems)
-    print(result_df.head())
+    all_tests = collect_all_testcases('../Test Cases')
+    df = find_anomaly_problem_chain_transform(all_tests, anomalies_problems)

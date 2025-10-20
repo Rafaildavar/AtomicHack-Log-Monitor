@@ -2,7 +2,6 @@ import pandas as pd
 from pathlib import Path
 import re
 
-
 def parse_log_line(line: str):
     """Парсит строку лога и возвращает словарь с атрибутами"""
     pattern = r'^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\s+(\w+)\s+([^:]+):\s*(.+)$'
@@ -39,6 +38,29 @@ def logs_to_dataframe(folder_path: str) -> pd.DataFrame:
     return pd.DataFrame(all_logs) if all_logs else pd.DataFrame()
 
 
+def collect_all_testcases(base_folder: str) -> pd.DataFrame:
+    """
+    Проходит по всем подпапкам base_folder, находит логи и добавляет ID сценария (номер из названия папки).
+    Например: 'TestCase 3' -> id_scenario = 3
+    """
+    base = Path(base_folder)
+    all_cases = []
+
+    for subfolder in base.iterdir():
+        if subfolder.is_dir() and re.match(r'TestCase\s*\d+', subfolder.name):
+            match = re.search(r'(\d+)', subfolder.name)
+            case_id = int(match.group(1)) if match else None
+
+            df_case = logs_to_dataframe(subfolder)
+            if not df_case.empty:
+                df_case['id_scenario'] = case_id
+                all_cases.append(df_case)
+
+    if all_cases:
+        return pd.concat(all_cases, ignore_index=True)
+    return pd.DataFrame()
+
+
 if __name__ == "__main__":
-    df = logs_to_dataframe("Validation_Cases/ValidationCase_1")
-    print(df.head())
+    df_all = collect_all_testcases("TestCase")
+    print(df_all.head())
