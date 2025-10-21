@@ -23,7 +23,7 @@ reports/
 формат посылки.txt
 хакатон.pdf
 *.zip
-*.html
+result_df.py.html
 *.xlsx
 
 # Validation data (too large for git)
