@@ -34,3 +34,30 @@ result_df.py.html
 # Submission files (private)
 ССЫЛКА_НА_БОТА.txt
 ТИЗЕР.txt
+
+# API generated files
+api/reports/
+api/__pycache__/
+api/*.log
+
+# Core cache
+core/__pycache__/
+core/**/__pycache__/
+
+# Test results
+test_results/
+*.pytest_cache/
+
+# Test files and logs
+Test Cases/
+Validation Cases/
+*.log
+analysis_log*.txt
+test_cases_results_*.csv
+bot.log
+*.mov
+*.mp4
+
+# Build artifacts
+web/dist/
+web/node_modules/
