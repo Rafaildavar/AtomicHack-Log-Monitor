@@ -9,8 +9,22 @@ import { downloadBlob } from '../lib/utils';
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
-  const data = location.state?.data as AnalyzeResponse;
-  const error = location.state?.error as string | null;
+  
+  // Пробуем получить данные из sessionStorage или из state
+  let data = location.state?.data as AnalyzeResponse;
+  let error = location.state?.error as string | null;
+  
+  if (!data) {
+    const savedData = sessionStorage.getItem('analysis_results');
+    if (savedData) {
+      try {
+        data = JSON.parse(savedData);
+        console.log('📊 Данные загружены из sessionStorage:', data);
+      } catch (e) {
+        console.error('Ошибка парсинга данных из sessionStorage:', e);
+      }
+    }
+  }
 
   // Если произошла ошибка
   if (error) {

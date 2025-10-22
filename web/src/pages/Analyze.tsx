@@ -148,7 +148,20 @@ export default function Analyze() {
           localStorage.setItem('analysis_history', JSON.stringify(history.slice(0, 50))); // Сохраняем последние 50
 
           console.log('✅ Анализ завершен! Полученный threshold:', data.analysis.threshold_used);
-          navigate('/results', { state: { data, error: null } });
+          console.log('📊 Данные для Results:', data);
+          console.log('📊 Количество результатов:', data.results?.length);
+          
+          // Сохраняем в sessionStorage БЕЗ HTML графиков (они слишком большие)
+          const dataForStorage = {
+            status: data.status,
+            analysis: data.analysis,
+            results: data.results,
+            excel_report: data.excel_report,
+            // log_visualization и anomaly_graph НЕ сохраняем
+          };
+          sessionStorage.setItem('analysis_results', JSON.stringify(dataForStorage));
+          
+          navigate('/results');
         },
         onError: (error) => {
           // Navigate to results page with error
