@@ -5,6 +5,7 @@ import StatsCards from '../components/results/StatsCards';
 import type { AnalyzeResponse } from '../api/client';
 import { api } from '../api/client';
 import { downloadBlob } from '../lib/utils';
+import LogVisualization from '../components/results/LogVisualization';
 
 export default function Results() {
   const location = useLocation();
@@ -178,6 +179,9 @@ export default function Results() {
             </div>
           </motion.div>
         </div>
+
+        {/* График логов */}
+        <LogVisualization htmlContent={data.log_visualization} />
 
         {/* Список аномалий */}
         <motion.div

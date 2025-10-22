@@ -13,6 +13,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, F
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+import plotly.graph_objects as go
 
 # Импортируем логику коллеги из core
 import sys
@@ -60,6 +61,94 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 logger.info("⏳ Загрузка ML модели при старте API...")
 ml_analyzer._load_model()
 logger.info("✅ ML модель загружена и готова к анализам")
+
+
+def generate_log_visualization(logs_df: pd.DataFrame) -> str:
+    """
+    Генерирует интерактивный HTML график распределения логов по времени.
+    
+    Args:
+        logs_df: DataFrame с логами (columns: datetime, level, text, filename, line_number)
+    
+    Returns:
+        HTML строка с графиком
+    """
+    try:
+        # Подготовляем данные
+        df = logs_df.copy()
+        
+        # Убедимся что у нас есть нужные колонки
+        if 'datetime' not in df.columns or 'level' not in df.columns:
+            logger.warning("Не хватает колонок для графика, используем пустой датафрейм")
+            return "<div>Недостаточно данных для графика</div>"
+        
+        # Преобразуем datetime в нужный формат
+        df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
+        df = df.dropna(subset=['datetime'])
+        
+        if df.empty:
+            return "<div>Нет валидных данных для построения графика</div>"
+        
+        # Считаем количество логов по уровню
+        level_counts = df['level'].value_counts().to_dict()
+        
+        # Определяем порядок и цвета
+        level_order = ["INFO", "WARNING", "ERROR"]
+        color_map = {
+            "INFO": "#87CEEB",      # Light sky blue
+            "WARNING": "#FFD700",    # Gold
+            "ERROR": "#FF6347"       # Tomato
+        }
+        
+        # Фильтруем только известные уровни
+        df = df[df['level'].isin(level_order)]
+        
+        if df.empty:
+            return "<div>Нет данных в известных уровнях логирования</div>"
+        
+        # Создаем интерактивный scatter график
+        fig = go.Figure()
+        
+        for level in level_order:
+            level_data = df[df['level'] == level]
+            if not level_data.empty:
+                count = len(level_data)
+                fig.add_trace(go.Scatter(
+                    x=level_data['datetime'],
+                    y=[level] * count,
+                    mode='markers',
+                    name=f"{level} ({count})",
+                    marker=dict(
+                        size=10,
+                        color=color_map.get(level, "#999999"),
+                        opacity=0.8,
+                        line=dict(width=1, color="white")
+                    ),
+                    text=level_data['text'].astype(str),
+                    hovertemplate='<b>%{y}</b><br>Время: %{x}<br>Сообщение: %{text}<extra></extra>'
+                ))
+        
+        # Обновляем layout
+        fig.update_layout(
+            title="📊 Распределение логов по времени",
+            xaxis_title="Время",
+            yaxis_title="Уровень логирования",
+            template="plotly_dark",
+            height=400,
+            hovermode='closest',
+            yaxis=dict(categoryorder="array", categoryarray=level_order),
+            plot_bgcolor="#0a0e27",
+            paper_bgcolor="#0a0e27",
+            font=dict(color="white", family="Arial, sans-serif")
+        )
+        
+        # Возвращаем HTML
+        html = fig.to_html(include_plotlyjs='cdn', config={'responsive': True})
+        return html
+        
+    except Exception as e:
+        logger.error(f"Ошибка при генерации графика: {e}")
+        return f"<div style='color: red;'>Ошибка при генерации графика: {str(e)}</div>"
 
 
 @app.get("/")
@@ -236,7 +325,8 @@ async def analyze_logs(
                 "threshold_used": threshold_float
             },
             "results": results_df.to_dict('records') if not results_df.empty else [],
-            "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None
+            "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None,
+            "log_visualization": generate_log_visualization(logs_df) if not logs_df.empty else None
         }
         
         return response

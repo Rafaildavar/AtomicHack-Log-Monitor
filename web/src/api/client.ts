@@ -49,6 +49,7 @@ export interface AnalyzeResponse {
   };
   results: AnalysisResult[];
   excel_report: string | null;
+  log_visualization: string | null;
 }
 
 // API Methods
