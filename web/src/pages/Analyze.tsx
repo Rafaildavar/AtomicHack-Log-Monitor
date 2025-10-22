@@ -128,12 +128,18 @@ export default function Analyze() {
       },
       {
         onSuccess: (data) => {
-          // Сохраняем в историю
+          // Сохраняем в историю (БЕЗ HTML графиков чтобы не переполнить localStorage)
           const historyItem = {
             id: `${Date.now()}`,
             timestamp: new Date().toISOString(),
             filename: logFile.name,
-            data,
+            data: {
+              status: data.status,
+              analysis: data.analysis,
+              results: data.results,
+              excel_report: data.excel_report,
+              // Графики НЕ сохраняем - они генерируются каждый раз
+            },
           };
 
           const saved = localStorage.getItem('analysis_history');
