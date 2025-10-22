@@ -12,7 +12,7 @@ export default function SettingsPanel({
   disabled = false
 }: SettingsPanelProps) {
   return (
-    <div className="card">
+    <div className="card no-animation">
       <div className="flex items-center space-x-2 mb-4">
         <Settings className="w-5 h-5 text-atomic-accent" />
         <h3 className="text-lg font-semibold text-white">Настройки анализа</h3>

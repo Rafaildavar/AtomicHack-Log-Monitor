@@ -182,7 +182,7 @@ export default function Analyze() {
           {/* Main content */}
           <div className="md:col-span-2 space-y-6">
             {/* File uploader */}
-            <div>
+            <div className="no-animation">
               <FileUploader
                 onFileSelect={handleFileSelect}
                 onFileRemove={handleFileRemove}
@@ -247,7 +247,7 @@ export default function Analyze() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Settings */}
-            <div>
+            <div className="no-animation">
               <SettingsPanel
                 threshold={threshold}
                 onThresholdChange={setThreshold}

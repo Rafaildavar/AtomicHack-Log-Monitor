@@ -1,0 +1,22 @@
+{
+  "buildCommand": "cd web && npm install && npm run build",
+  "outputDirectory": "web/dist",
+  "functions": {
+    "vercel_api/index.py": {
+      "runtime": "python3.11"
+    }
+  },
+  "env": {
+    "VITE_API_URL": "@vite-api-url"
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "vercel_api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "web/dist/index.html"
+    }
+  ]
+}
