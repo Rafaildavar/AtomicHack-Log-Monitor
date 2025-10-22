@@ -80,13 +80,18 @@ class MLLogAnalyzer:
         # Список для новых аномалий (ниже порога)
         low_confidence_anomalies = []
         
-        # Анализируем каждую WARNING строку
-        for _, row in logs_df.iterrows():
-            if row["level"] == "WARNING":
+        # ОПТИМИЗАЦИЯ: Batch encoding вместо loop для всех WARNING строк
+        warning_logs = logs_df[logs_df["level"] == "WARNING"]
+        if len(warning_logs) > 0:
+            logger.info(f"⚡ Batch encoding {len(warning_logs)} WARNING логов...")
+            warning_texts = warning_logs["text"].astype(str).tolist()
+            # Кодируем все WARNING строки за раз (быстрее чем loop)
+            warning_embeddings = self.model.encode(warning_texts, normalize_embeddings=True, show_progress_bar=False, batch_size=32)
+            
+            # Теперь обрабатываем с уже готовыми эмбеддингами
+            for idx, (_, row) in enumerate(warning_logs.iterrows()):
                 text = str(row["text"]).strip()
-
-                # Получаем эмбеддинг текущей строки
-                text_embedding = self.model.encode(text, normalize_embeddings=True)
+                text_embedding = warning_embeddings[idx]
 
                 # Вычисляем косинусное сходство со всеми известными аномалиями
                 cosine_scores = util.cos_sim(text_embedding, anomaly_embeddings)[0]
@@ -176,10 +181,14 @@ class MLLogAnalyzer:
             logger.debug(f"Найдено {len(low_confidence_anomalies)} новых аномалий, добавляем {len(top_new_anomalies)}:")
             
             if top_new_anomalies:
+                # ОПТИМИЗАЦИЯ: Batch encoding новых аномалий (вместо loop)
+                new_anomaly_texts = [a['text'] for a in top_new_anomalies]
+                logger.info(f"⚡ Batch encoding {len(top_new_anomalies)} новых аномалий...")
+                new_anomaly_embeddings = self.model.encode(new_anomaly_texts, normalize_embeddings=True, show_progress_bar=False, batch_size=32)
+                
                 # Для каждой новой аномалии находим самую похожую СУЩЕСТВУЮЩУЮ аномалию
-                for idx, anomaly in enumerate(top_new_anomalies, 1):
+                for idx, (anomaly, anomaly_embedding) in enumerate(zip(top_new_anomalies, new_anomaly_embeddings), 1):
                     anomaly_text = anomaly['text']
-                    anomaly_embedding = self.model.encode(anomaly_text, normalize_embeddings=True)
                     
                     # Вычисляем косинусное сходство со ВСЕМИ аномалиями из словаря
                     similarity_scores = util.cos_sim(anomaly_embedding, anomaly_embeddings)[0]

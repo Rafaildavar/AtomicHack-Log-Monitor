@@ -13,10 +13,10 @@ export default function Footer() {
             </p>
             <div className="flex space-x-3">
               <a
-                href="https://github.com"
+                href="https://github.com/Rafaildavar/AtomicHack-Log-Monitor"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <Github className="w-5 h-5" />
               </a>
@@ -24,13 +24,13 @@ export default function Footer() {
                 href="https://t.me/AtomicHackLogBot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <MessageCircle className="w-5 h-5" />
               </a>
               <a
                 href="mailto:team@blacklotus.dev"
-                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <Mail className="w-5 h-5" />
               </a>
@@ -69,17 +69,17 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Ресурсы</h4>
             <ul className="space-y-2">
               <li>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm transition-colors">
+                <a href="https://github.com/Rafaildavar/AtomicHack-Log-Monitor" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm transition-colors">
                   GitHub Repository
                 </a>
               </li>
               <li>
-                <a href="/docs/api" className="text-gray-400 hover:text-white text-sm transition-colors">
+                <a href="/docs" className="text-gray-400 hover:text-white text-sm transition-colors">
                   API Reference
                 </a>
               </li>
               <li>
-                <a href="/docs/integration" className="text-gray-400 hover:text-white text-sm transition-colors">
+                <a href="/docs" className="text-gray-400 hover:text-white text-sm transition-colors">
                   Integration Guide
                 </a>
               </li>

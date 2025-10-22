@@ -1,0 +1,75 @@
+/* ========== СВЕТЛАЯ ТЕМА - МИНИМАЛЬНЫЙ СВЕТЛЫЙ ДИЗАЙН ========== */
+html.light {
+  /* Белый и светло-серый фон */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #eeeeee;
+  
+  /* Glassmorphism для светлой темы - белые карточки */
+  --glass-bg: rgba(255, 255, 255, 0.98);
+  --glass-border: #e0e0e0;
+  
+  /* Текст - только чёрный */
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #666666;
+  
+  /* Акценты - фиолетово-голубой градиент (как в темной теме) */
+  --accent-primary: #a855f7;
+  --accent-secondary: #7c3aed;
+  --accent-tertiary: #06b6d4;
+  
+  /* Градиент для светлой темы */
+  --accent-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #06b6d4 100%);
+  
+  /* Фон - чистый белый */
+  --bg-gradient: #ffffff;
+  
+  /* Переходы */
+  --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+html.light {
+  background: var(--bg-gradient);
+  color: var(--text-primary);
+}
+
+html.light body {
+  background: var(--bg-gradient);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ========== АНИМАЦИИ СВЕТЛОЙ ТЕМЫ ========== */
+
+@keyframes fadeInUpLight {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowPurpleLight {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+}
+
+html.light h1,
+html.light h2,
+html.light h3 {
+  animation: fadeInUpLight 0.6s ease-out;
+  color: #000000;
+}
+
+html.light p {
+  animation: slideIn 0.5s ease-out 0.1s both;
+  color: #000000;
+}
