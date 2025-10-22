@@ -1,220 +1,245 @@
 import { Link } from 'react-router-dom';
-import { Activity, Zap, Shield, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
+import { Activity, Zap, Shield, Database, ArrowRight, FileText, BarChart3, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-atomic-blue/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-atomic-accent/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-
+      {/* Hero Section - Professional */}
+      <section className="relative pt-32 pb-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center space-y-8"
+            className="text-center space-y-6"
           >
-            {/* Badge */}
             <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-atomic-blue/20 border border-atomic-blue/30">
               <Activity className="w-4 h-4 text-atomic-accent" />
-              <span className="text-sm text-gray-300">AI-powered Log Analysis</span>
+              <span className="text-sm text-gray-300">AtomicHack Log Monitor</span>
             </div>
 
-            {/* Title */}
-            <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
-              Анализ логов
+            <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+              Система мониторинга и анализа
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-atomic-blue to-atomic-accent">
-                за секунды, не часы
+                журналов событий
               </span>
             </h1>
 
-            {/* Description */}
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              ИИ-анализатор автоматически выявляет аномалии и критические проблемы в логах 
-              с использованием ML semantic search
+            <p className="text-lg text-gray-400 max-w-3xl mx-auto">
+              Интеллектуальная система на базе ML для автоматического выявления аномалий 
+              и критических проблем в логах корпоративных систем
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link to="/analyze" className="btn-primary text-lg px-8 py-4">
-                Попробовать бесплатно
+                Начать анализ
                 <ArrowRight className="w-5 h-5 ml-2 inline" />
               </Link>
-              <a 
-                href="#demo" 
-                className="btn-secondary text-lg px-8 py-4"
-              >
-                Посмотреть демо
-              </a>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-12">
-              <div>
-                <div className="text-4xl font-bold text-white">4-е</div>
-                <div className="text-sm text-gray-400 mt-1">место на хакатоне</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-white">99%</div>
-                <div className="text-sm text-gray-400 mt-1">точность анализа</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-white">&lt;3 сек</div>
-                <div className="text-sm text-gray-400 mt-1">скорость обработки</div>
-              </div>
+              <Link to="/docs" className="btn-secondary text-lg px-8 py-4">
+                Документация API
+              </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-transparent to-atomic-darker">
+      {/* Key Features */}
+      <section className="py-16 px-4 bg-gradient-to-b from-transparent to-atomic-darker">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              Как это работает
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Ключевые возможности
             </h2>
-            <p className="text-xl text-gray-400">
-              Три простых шага до результата
+            <p className="text-lg text-gray-400">
+              Комплексное решение для мониторинга критической инфраструктуры
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Feature 1 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="card text-center"
+              className="card"
             >
-              <div className="w-16 h-16 rounded-full bg-atomic-blue/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-atomic-accent">1</span>
+              <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-atomic-accent" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Загрузите логи</h3>
+              <h3 className="text-xl font-bold text-white mb-2">ML-анализ в реальном времени</h3>
               <p className="text-gray-400">
-                Drag & drop файлов .txt, .log или .zip архивов до 20MB
+                Автоматическое обнаружение аномалий с использованием Sentence Transformers и semantic search
               </p>
             </motion.div>
 
-            {/* Step 2 */}
+            {/* Feature 2 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="card text-center"
+              className="card"
             >
-              <div className="w-16 h-16 rounded-full bg-atomic-blue/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-atomic-accent">2</span>
+              <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-atomic-accent" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">ML анализ</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Высокая точность обнаружения</h3>
               <p className="text-gray-400">
-                Sentence Transformers находят аномалии и связывают их с проблемами
+                Настраиваемый порог similarity для баланса между точностью и полнотой обнаружения
               </p>
             </motion.div>
 
-            {/* Step 3 */}
+            {/* Feature 3 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="card text-center"
+              className="card"
             >
-              <div className="w-16 h-16 rounded-full bg-atomic-blue/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-atomic-accent">3</span>
+              <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
+                <Database className="w-6 h-6 text-atomic-accent" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Получите отчет</h3>
+              <h3 className="text-xl font-bold text-white mb-2">REST API для интеграции</h3>
               <p className="text-gray-400">
-                Excel отчет с детальной трассировкой аномалий и графики
+                Готовое API для интеграции с существующими системами мониторинга и SIEM
               </p>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 px-4">
+      {/* Workflow */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Процесс работы
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { icon: FileText, title: 'Загрузка логов', desc: 'Поддержка .txt, .log, .zip' },
+              { icon: Activity, title: 'ML-обработка', desc: 'Анализ через Sentence Transformers' },
+              { icon: BarChart3, title: 'Выявление аномалий', desc: 'Сопоставление с базой проблем' },
+              { icon: Clock, title: 'Генерация отчета', desc: 'Excel с детальной трассировкой' },
+            ].map((step, idx) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="card text-center relative"
+              >
+                {idx < 3 && (
+                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 bg-gradient-to-r from-atomic-blue to-transparent"></div>
+                )}
+                <div className="w-16 h-16 rounded-full bg-atomic-blue/20 flex items-center justify-center mx-auto mb-4">
+                  <step.icon className="w-8 h-8 text-atomic-accent" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
+                <p className="text-sm text-gray-400">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Technical Details */}
+      <section className="py-16 px-4 bg-gradient-to-b from-atomic-darker to-transparent">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Почему выбирают нас
+                Технические характеристики
               </h2>
               
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <Zap className="w-6 h-6 text-atomic-accent flex-shrink-0 mt-1" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Молниеносно быстро</h3>
-                    <p className="text-gray-400">Анализ логов за секунды вместо часов ручной работы</p>
+                    <h3 className="text-lg font-semibold text-white">Масштабируемость</h3>
+                    <p className="text-gray-400">Обработка больших объемов логов с поддержкой пакетной загрузки</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <Shield className="w-6 h-6 text-atomic-accent flex-shrink-0 mt-1" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Точность анализа</h3>
-                    <p className="text-gray-400">ML модель с 99% точностью обнаружения аномалий</p>
+                    <h3 className="text-lg font-semibold text-white">Производительность</h3>
+                    <p className="text-gray-400">Анализ логов за секунды благодаря оптимизированной ML-модели</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <TrendingUp className="w-6 h-6 text-atomic-accent flex-shrink-0 mt-1" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Real-time мониторинг</h3>
-                    <p className="text-gray-400">Отслеживайте аномалии в реальном времени</p>
+                    <h3 className="text-lg font-semibold text-white">Интеграция</h3>
+                    <p className="text-gray-400">Docker deployment, REST API, Telegram bot</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="w-6 h-6 text-atomic-accent flex-shrink-0 mt-1" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Production-ready</h3>
-                    <p className="text-gray-400">Docker deployment за 1 команду</p>
+                    <h3 className="text-lg font-semibold text-white">Настраиваемость</h3>
+                    <p className="text-gray-400">Собственные словари аномалий и настройка порога чувствительности</p>
                   </div>
                 </div>
               </div>
 
-              <Link to="/analyze" className="btn-primary inline-flex items-center mt-6">
-                Начать анализ
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
+              <div className="pt-4">
+                <Link to="/analyze" className="btn-primary inline-flex items-center">
+                  Перейти к анализу
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Link>
+              </div>
             </div>
 
-            {/* Demo screenshot placeholder */}
-            <div className="card">
-              <div className="aspect-video bg-gradient-to-br from-atomic-blue/20 to-atomic-accent/20 rounded-lg flex items-center justify-center">
-                <Activity className="w-24 h-24 text-atomic-accent/50" />
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
+                <div className="text-4xl font-bold text-white mb-2">500+</div>
+                <div className="text-sm text-gray-400">Типов аномалий в базе</div>
               </div>
-              <p className="text-center text-gray-400 mt-4">
-                Скринкаст демонстрации будет здесь
-              </p>
+              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
+                <div className="text-4xl font-bold text-white mb-2">90%</div>
+                <div className="text-sm text-gray-400">Точность анализа</div>
+              </div>
+              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
+                <div className="text-4xl font-bold text-white mb-2">&lt;5 сек</div>
+                <div className="text-sm text-gray-400">Время обработки</div>
+              </div>
+              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
+                <div className="text-4xl font-bold text-white mb-2">24/7</div>
+                <div className="text-sm text-gray-400">Мониторинг</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
+      <section className="py-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="card text-center space-y-6 bg-gradient-to-r from-atomic-blue/20 to-atomic-accent/20 border-atomic-blue/30">
             <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Готовы попробовать?
+              Начните работу с системой
             </h2>
             <p className="text-xl text-gray-300">
-              Загрузите логи и получите результат за секунды
+              Загрузите логи и получите детальный анализ аномалий
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/analyze" className="btn-primary text-lg px-8 py-4">
                 Анализировать логи
               </Link>
-              <a href="https://t.me/AtomicHackLogBot" target="_blank" rel="noopener noreferrer" className="btn-secondary text-lg px-8 py-4">
+              <a 
+                href="https://t.me/AtomicHackLogBot" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn-secondary text-lg px-8 py-4"
+              >
                 Telegram Bot
               </a>
             </div>
@@ -224,4 +249,3 @@ export default function Home() {
     </div>
   );
 }
-

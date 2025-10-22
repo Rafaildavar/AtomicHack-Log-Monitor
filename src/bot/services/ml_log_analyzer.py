@@ -71,6 +71,9 @@ class MLLogAnalyzer:
             sample_problem = anomalies_problems_df.iloc[0]
             logger.info(f"Пример проблемы из словаря: '{sample_problem['Проблема']}'")
 
+        # Список для новых аномалий (ниже порога)
+        low_confidence_anomalies = []
+        
         # Анализируем каждую WARNING строку
         for _, row in logs_df.iterrows():
             if row["level"] == "WARNING":
@@ -84,16 +87,26 @@ class MLLogAnalyzer:
                 best_idx = cosine_scores.argmax().item()
                 best_score = cosine_scores[best_idx].item()
 
-                # Если сходство ниже порога — добавляем с None
+                # Если сходство ниже порога — сохраняем для дальнейшего анализа
                 if best_score < self.similarity_threshold:
-                    logger.debug(f"Аномалия с низкой уверенностью: {text[:50]}... (score: {best_score})")
+                    logger.debug(f"Новая аномалия (score: {best_score:.3f}): {text[:50]}...")
                     
-                    results.append({
-                        'ID аномалии': None,
-                        'ID проблемы': None,
-                        'Файл с проблемой': None,
-                        '№ строки': None,
-                        'Строка из лога': None
+                    # Собираем информацию о полной строке лога
+                    if 'full_line' in row and pd.notna(row['full_line']):
+                        full_log_line = row['full_line']
+                    else:
+                        source = row.get('source', '')
+                        if source and source != 'unknown':
+                            full_log_line = f"{row['datetime']} {row['level']} {source}: {text}"
+                        else:
+                            full_log_line = f"{row['datetime']} {row['level']} {text}"
+                    
+                    low_confidence_anomalies.append({
+                        'score': best_score,
+                        'text': text,
+                        'full_line': full_log_line,
+                        'filename': row['filename'],
+                        'line_number': row['line_number']
                     })
                     continue
 
@@ -147,8 +160,46 @@ class MLLogAnalyzer:
                             'Строка из лога': full_log_line
                         })
 
+            # Добавляем ВСЕ новые аномалии с score > 0.5 (не только топ)
+            top_new_anomalies = []
+            if low_confidence_anomalies:
+                # Сортируем по score (от большего к меньшему) и фильтруем score > 0.5
+                low_confidence_anomalies.sort(key=lambda x: x['score'], reverse=True)
+                top_new_anomalies = [a for a in low_confidence_anomalies if a['score'] > 0.5]
+            
+            logger.info(f"Найдено {len(low_confidence_anomalies)} новых аномалий, добавляем {len(top_new_anomalies)}:")
+            
+            if top_new_anomalies:
+                # Для каждой новой аномалии находим самую похожую СУЩЕСТВУЮЩУЮ аномалию
+                for idx, anomaly in enumerate(top_new_anomalies, 1):
+                    anomaly_text = anomaly['text']
+                    anomaly_embedding = self.model.encode(anomaly_text, normalize_embeddings=True)
+                    
+                    # Вычисляем косинусное сходство со ВСЕМИ аномалиями из словаря
+                    similarity_scores = util.cos_sim(anomaly_embedding, anomaly_embeddings)[0]
+                    best_match_idx = similarity_scores.argmax().item()
+                    best_match_score = similarity_scores[best_match_idx].item()
+                    
+                    # Берем ID аномалии и ID проблемы из самой похожей аномалии
+                    matched_anomaly_row = anomalies_problems_df.iloc[best_match_idx]
+                    matched_anomaly_id = matched_anomaly_row['ID аномалии']
+                    matched_problem_id = matched_anomaly_row['ID проблемы']
+                    matched_anomaly_text = matched_anomaly_row['Аномалия']
+                    
+                    logger.info(f"  Новая аномалия #{idx}: score={anomaly['score']:.3f} -> ID аномалии={matched_anomaly_id}, ID проблемы={matched_problem_id}")
+                    logger.info(f"    Найденный текст: '{anomaly_text[:60]}...'")
+                    logger.info(f"    Похожая аномалия (score={best_match_score:.3f}): '{matched_anomaly_text[:60]}...'")
+                    
+                    results.append({
+                        'ID аномалии': matched_anomaly_id,  # ID самой похожей существующей аномалии
+                        'ID проблемы': matched_problem_id,  # ID проблемы этой аномалии
+                        'Файл с проблемой': anomaly['filename'],
+                        '№ строки': anomaly['line_number'],
+                        'Строка из лога': anomaly['full_line']
+                    })
+
         result_df = pd.DataFrame(results)
-        logger.info(f"ML анализ завершен: найдено {len(result_df)} проблем")
+        logger.info(f"ML анализ завершен: найдено {len(result_df)} проблем (включая новые аномалии)")
 
         return result_df
 

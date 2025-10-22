@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -64,13 +64,26 @@ export const analyzeLogsAPI = async (
   }
   formData.append('threshold', threshold.toString());
 
-  const response = await api.post<AnalyzeResponse>('/api/v1/analyze', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+  console.log('📤 Отправка запроса на анализ:', {
+    fileName: logFile.name,
+    fileSize: logFile.size,
+    threshold
   });
 
-  return response.data;
+  try {
+    const response = await api.post<AnalyzeResponse>('/api/v1/analyze', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 300000, // 5 минут для больших файлов
+    });
+
+    console.log('✅ Ответ от API:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Ошибка API:', error);
+    throw new Error(error.response?.data?.detail || error.message || 'Ошибка анализа');
+  }
 };
 
 export const downloadExcel = async (filename: string): Promise<Blob> => {

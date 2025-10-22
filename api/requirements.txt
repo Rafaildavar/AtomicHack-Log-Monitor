@@ -3,11 +3,11 @@ fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-multipart==0.0.6
 
-# ML и анализ (те же библиотеки, что использует коллега)
-sentence-transformers==2.2.2
-pandas==2.2.0
-numpy==1.26.3
-torch==2.1.2
+# ML и анализ (совместимые версии)
+sentence-transformers==2.3.1
+pandas>=2.2.0
+numpy>=1.26.0
+torch>=2.1.0
 
 # Excel отчеты (та же библиотека для генерации отчетов для защиты)
 openpyxl==3.1.2
