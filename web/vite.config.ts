@@ -17,16 +17,11 @@ export default defineConfig({
         },
       },
     },
-    // Optimizations
-    minify: 'terser',
-    sourcemap: false, // Disable sourcemaps in production
+    // Optimizations (use esbuild default minifier)
+    minify: 'esbuild',
+    sourcemap: false,
     cssCodeSplit: true,
     chunkSizeWarningLimit: 500,
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console logs in production
-      },
-    },
   },
   // Development optimizations
   server: {

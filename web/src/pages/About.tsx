@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Award, Users, Zap, Code, Github, Linkedin } from 'lucide-react';
+import { Award, Users, Zap, Code, Github } from 'lucide-react';
 
 export default function About() {
   return (

@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { Upload, X, FileText, File } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { formatFileSize } from '../../lib/utils';
 
 interface FileUploaderProps {

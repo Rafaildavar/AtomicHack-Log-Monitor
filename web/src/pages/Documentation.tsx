@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Code, Terminal, ExternalLink, Copy, Check } from 'lucide-react';
+import { Code, ExternalLink, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Documentation() {
@@ -11,7 +11,7 @@ export default function Documentation() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const CodeBlock = ({ code, language = 'bash', title, id }: { code: string; language?: string; title: string; id: string }) => (
+  const CodeBlock = ({ code, language = 'bash', id }: { code: string; language?: string; id: string }) => (
     <div className="card mb-4">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-mono text-gray-400">{language}</span>
@@ -118,7 +118,6 @@ export default function Documentation() {
 
               <CodeBlock
                 id="curl-analyze"
-                title="cURL"
                 language="bash"
                 code={`curl -X POST "http://localhost:8001/api/v1/analyze" \\
   -F "log_file=@logs.txt" \\
@@ -127,7 +126,6 @@ export default function Documentation() {
 
               <CodeBlock
                 id="python-analyze"
-                title="Python"
                 language="python"
                 code={`import requests
 
@@ -144,7 +142,6 @@ print(result)`}
 
               <CodeBlock
                 id="js-analyze"
-                title="JavaScript"
                 language="javascript"
                 code={`const formData = new FormData();
 formData.append('log_file', fileInput.files[0]);
@@ -165,7 +162,6 @@ console.log(result);`}
               <p className="text-sm font-semibold text-white mb-3">Response (200 OK)</p>
               <CodeBlock
                 id="response-analyze"
-                title="JSON"
                 language="json"
                 code={`{
   "status": "success",
@@ -214,7 +210,6 @@ console.log(result);`}
             
             <CodeBlock
               id="curl-download"
-              title="cURL"
               language="bash"
               code={`curl -X GET "http://localhost:8001/api/v1/download/analysis_report.xlsx" \\
   -o report.xlsx`}
@@ -258,7 +253,6 @@ console.log(result);`}
               <CodeBlock
                 id="integration-step2"
                 language="javascript"
-                title="Пример интеграции"
                 code={`async function analyzeLogs(file, threshold = 0.7) {
   const formData = new FormData();
   formData.append('log_file', file);
@@ -287,7 +281,6 @@ console.log(result);`}
               <CodeBlock
                 id="integration-step3"
                 language="javascript"
-                title="Обработка ответа"
                 code={`const result = await analyzeLogs(file);
 
 // Проверка успеха

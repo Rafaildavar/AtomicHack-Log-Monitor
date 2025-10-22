@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Activity, Zap, Shield, Database, ArrowRight, FileText, BarChart3, Clock, Code, Cpu, GitBranch, Award } from 'lucide-react';
+import { Activity, Shield, BarChart3, ArrowRight, Award, Cpu, GitBranch } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
