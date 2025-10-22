@@ -63,6 +63,28 @@ ml_analyzer._load_model()
 logger.info("✅ ML модель загружена и готова к анализам")
 
 
+async def _save_upload_file(upload_file: UploadFile, destination_path: str) -> str:
+    """
+    Сохраняет загруженный файл на диск по частям, чтобы не занимать много памяти.
+    Возвращает путь к сохраненному файлу.
+    """
+    os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+    # Читаем и пишем по 1 МБ
+    chunk_size_bytes = 1024 * 1024
+    with open(destination_path, 'wb') as out_file:
+        while True:
+            chunk = await upload_file.read(chunk_size_bytes)
+            if not chunk:
+                break
+            out_file.write(chunk)
+    # Сбрасываем указатель, если файл понадобится повторно читать
+    try:
+        await upload_file.seek(0)
+    except Exception:
+        pass
+    return destination_path
+
+
 def generate_log_visualization(logs_df: pd.DataFrame) -> str:
     """
     Генерирует интерактивный HTML график распределения логов по времени.
@@ -106,6 +128,11 @@ def generate_log_visualization(logs_df: pd.DataFrame) -> str:
         if df.empty:
             return "<div>Нет данных в известных уровнях логирования</div>"
         
+        # Для очень больших наборов данных уменьшим выборку, чтобы не раздувать ответ
+        max_points = 20000
+        if len(df) > max_points:
+            df = df.sample(n=max_points, random_state=42)
+
         # Создаем интерактивный scatter график
         fig = go.Figure()
         
@@ -321,11 +348,9 @@ async def analyze_logs(
         logger.info(f"Получен запрос на анализ: {log_file.filename}")
         logger.info(f"🎯 Используемый порог схожести: {threshold_float}")
         
-        # Сохраняем загруженный файл с логами
+        # Сохраняем загруженный файл с логами (поштучно, чтобы избежать OOM)
         log_file_path = os.path.join(temp_dir, log_file.filename)
-        with open(log_file_path, 'wb') as f:
-            content = await log_file.read()
-            f.write(content)
+        await _save_upload_file(log_file, log_file_path)
         
         # Определяем файлы с логами
         if log_file.filename.endswith('.zip'):
@@ -352,9 +377,7 @@ async def analyze_logs(
         if anomalies_file:
             logger.info(f"Используем пользовательский словарь: {anomalies_file.filename}")
             anomalies_path = os.path.join(temp_dir, anomalies_file.filename)
-            with open(anomalies_path, 'wb') as f:
-                content = await anomalies_file.read()
-                f.write(content)
+            await _save_upload_file(anomalies_file, anomalies_path)
         else:
             # Проверяем, только если это ZIP архив
             if log_file.filename.lower().endswith('.zip'):
@@ -427,6 +450,10 @@ async def analyze_logs(
             logger.info(f"Excel отчет создан: {excel_report_path}")
         
         # Формируем ответ
+        # Для очень больших результатов отключаем тяжелые HTML графы в ответе
+        enable_log_vis = not logs_df.empty and len(logs_df) <= 100_000
+        enable_anomaly_graph = not results_df.empty and len(results_df) <= 500
+
         response = {
             "status": "success",
             "analysis": {
@@ -436,8 +463,8 @@ async def analyze_logs(
             },
             "results": results_df.to_dict('records') if not results_df.empty else [],
             "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None,
-            "log_visualization": generate_log_visualization(logs_df) if not logs_df.empty else None,
-            "anomaly_graph": generate_anomaly_graph(results_df, anomalies_df) if not results_df.empty else None
+            "log_visualization": generate_log_visualization(logs_df) if enable_log_vis else None,
+            "anomaly_graph": generate_anomaly_graph(results_df, anomalies_df) if enable_anomaly_graph else None
         }
         
         return response
