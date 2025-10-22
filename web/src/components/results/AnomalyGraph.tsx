@@ -5,7 +5,7 @@ interface AnomalyGraphProps {
 }
 
 export default function AnomalyGraph({ htmlContent }: AnomalyGraphProps) {
-  if (!htmlContent) {
+  if (!htmlContent || htmlContent.length < 100) {
     return null;
   }
 
@@ -18,7 +18,7 @@ export default function AnomalyGraph({ htmlContent }: AnomalyGraphProps) {
     >
       <h3 className="text-lg font-bold text-white mb-4">🔗 Граф связей аномалий</h3>
       <div 
-        className="w-full rounded-lg overflow-hidden bg-atomic-darker"
+        className="w-full rounded-lg overflow-hidden bg-atomic-darker border border-atomic-blue/20"
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
     </motion.div>
