@@ -99,3 +99,34 @@ h1, h2, h3 {
 p {
   animation: slideIn 0.5s ease-out 0.1s both;
 }
+
+/* ========== КАРТОЧКИ В ТЕМНОЙ ТЕМЕ ========== */
+
+/* Все карточки в темной теме - темный фон вместо белого */
+:root .card,
+div[class*="card"] {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Stats cards */
+div[class*="stat"],
+div[class*="Stats"] {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Все div с классом содержащим bg-white в темной теме - переделать */
+:root div[class*="bg-white"],
+:root div[class*="bg-slate"] {
+  background: var(--bg-secondary) !important;
+}
+
+/* Таблицы */
+:root table,
+:root thead,
+:root tbody tr {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
