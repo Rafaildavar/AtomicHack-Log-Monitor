@@ -182,11 +182,7 @@ export default function Analyze() {
           {/* Main content */}
           <div className="md:col-span-2 space-y-6">
             {/* File uploader */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <div>
               <FileUploader
                 onFileSelect={handleFileSelect}
                 onFileRemove={handleFileRemove}
@@ -194,7 +190,7 @@ export default function Analyze() {
                 anomaliesFile={anomaliesFile}
                 disabled={isPending}
               />
-            </motion.div>
+            </div>
 
             {/* Progress */}
             {isPending && (
@@ -251,17 +247,13 @@ export default function Analyze() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Settings */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
+            <div>
               <SettingsPanel
                 threshold={threshold}
                 onThresholdChange={setThreshold}
                 disabled={isPending}
               />
-            </motion.div>
+            </div>
 
             {/* Info card */}
             <motion.div
