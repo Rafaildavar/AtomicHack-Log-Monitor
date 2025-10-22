@@ -33,7 +33,7 @@ class MLLogAnalyzer:
         if self.model is None:
             logger.info("Загружаю модель sentence-transformers...")
             try:
-                self.model = SentenceTransformer("all-MiniLM-L6-v2")
+                self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
                 logger.info("Модель загружена успешно")
             except Exception as e:
                 logger.error(f"Ошибка загрузки модели: {e}")
