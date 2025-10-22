@@ -62,7 +62,7 @@ export const analyzeLogsAPI = async (
   if (anomaliesFile) {
     formData.append('anomalies_file', anomaliesFile);
   }
-  formData.append('threshold', threshold.toString());
+  formData.append('threshold', String(threshold));
 
   console.log('📤 Отправка запроса на анализ:', {
     fileName: logFile.name,

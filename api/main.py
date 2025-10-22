@@ -9,7 +9,7 @@ import os
 import tempfile
 from typing import Optional
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Form
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
@@ -52,6 +52,15 @@ ml_analyzer = MLLogAnalyzer(similarity_threshold=0.7)
 log_parser = LogParser()
 report_generator = ReportGenerator()
 
+# Создаем директорию для сохранения отчетов
+REPORTS_DIR = os.path.join(os.path.dirname(__file__), 'reports')
+os.makedirs(REPORTS_DIR, exist_ok=True)
+
+# Загружаем ML модель один раз при старте (для быстрых анализов)
+logger.info("⏳ Загрузка ML модели при старте API...")
+ml_analyzer._load_model()
+logger.info("✅ ML модель загружена и готова к анализам")
+
 
 @app.get("/")
 async def root():
@@ -83,7 +92,7 @@ async def health_check():
 async def analyze_logs(
     log_file: UploadFile = File(..., description="Файл с логами (.txt, .log, .zip)"),
     anomalies_file: Optional[UploadFile] = File(None, description="Словарь аномалий (anomalies_problems.csv)"),
-    threshold: float = 0.7
+    threshold: str = Form("0.7")
 ):
     """
     Анализирует логи с использованием ML (логика коллеги).
@@ -101,7 +110,17 @@ async def analyze_logs(
     temp_dir = tempfile.mkdtemp()
     
     try:
+        # Преобразуем threshold из строки в число
+        try:
+            threshold_float = float(threshold)
+            # Убедимся, что threshold в допустимом диапазоне
+            threshold_float = max(0.0, min(1.0, threshold_float))
+        except (ValueError, TypeError):
+            threshold_float = 0.7
+            logger.warning(f"Неверное значение threshold: {threshold}, использую дефолтное 0.7")
+        
         logger.info(f"Получен запрос на анализ: {log_file.filename}")
+        logger.info(f"🎯 Используемый порог схожести: {threshold_float}")
         
         # Сохраняем загруженный файл с логами
         log_file_path = os.path.join(temp_dir, log_file.filename)
@@ -138,15 +157,21 @@ async def analyze_logs(
                 content = await anomalies_file.read()
                 f.write(content)
         else:
-            # Проверяем, есть ли в ZIP архиве anomalies_problems.csv
-            extracted_anomalies = [f for f in log_parser.extract_zip(log_file_path, temp_dir) 
-                                  if f.endswith('anomalies_problems.csv')]
-            
-            if extracted_anomalies:
-                logger.info(f"Найден словарь в ZIP: {extracted_anomalies[0]}")
-                anomalies_path = extracted_anomalies[0]
+            # Проверяем, только если это ZIP архив
+            if log_file.filename.lower().endswith('.zip'):
+                extracted_anomalies = [f for f in log_parser.extract_zip(log_file_path, temp_dir) 
+                                      if f.endswith('anomalies_problems.csv')]
+                
+                if extracted_anomalies:
+                    logger.info(f"Найден словарь в ZIP: {extracted_anomalies[0]}")
+                    anomalies_path = extracted_anomalies[0]
+                else:
+                    anomalies_path = None
             else:
-                # Используем дефолтный словарь
+                anomalies_path = None
+            
+            # Если словарь не найден - используем дефолтный
+            if not anomalies_path:
                 default_anomalies = os.path.join(
                     os.path.dirname(__file__), 
                     '..', 'src', 'bot', 'services', 'anomalies_problems.csv'
@@ -165,8 +190,8 @@ async def analyze_logs(
         logger.info(f"Загружено {len(anomalies_df)} аномалий из словаря")
         
         # ML-анализ (ЛОГИКА КОЛЛЕГИ БЕЗ ИЗМЕНЕНИЙ)
-        ml_analyzer.similarity_threshold = threshold
-        logger.info(f"Запуск ML-анализа с порогом {threshold}")
+        ml_analyzer.similarity_threshold = threshold_float
+        logger.info(f"Запуск ML-анализа с порогом {threshold_float}")
         results_df = ml_analyzer.analyze_logs_with_ml(logs_df, anomalies_df)
         
         logger.info(f"ML-анализ завершен: найдено {len(results_df)} проблем")
@@ -177,9 +202,13 @@ async def analyze_logs(
         # Создаем Excel отчет (ТОЧНО ТАК ЖЕ КАК ДЛЯ ЗАЩИТЫ)
         excel_report_path = None
         if not results_df.empty:
-            # Конвертируем DataFrame в формат для report_generator
+            # Добавляем поле 'Сценарий' для совместимости с report_generator
+            results_df_with_scenario = results_df.copy()
+            results_df_with_scenario['Сценарий'] = 1  # ID сценария по умолчанию
+            
+            # Конвертируем DataFrame в формат для report_generator (точно как в боте)
             analysis_results = [{
-                'results': results_df.to_dict('records')
+                'results': results_df_with_scenario.to_dict('records')
             }]
             
             excel_report_path = os.path.join(temp_dir, f"analysis_report_{log_file.filename}.xlsx")
@@ -187,6 +216,15 @@ async def analyze_logs(
                 analysis_results, 
                 excel_report_path
             )
+            # Перемещаем отчет в постоянную директорию скачиваний
+            import shutil
+            final_excel_path = os.path.join(REPORTS_DIR, os.path.basename(excel_report_path))
+            try:
+                shutil.copy2(excel_report_path, final_excel_path)
+                excel_report_path = final_excel_path
+            except Exception:
+                # Если копирование не удалось, оставляем временный путь, но логируем
+                logger.warning("Не удалось скопировать Excel в reports/, используется временный файл")
             logger.info(f"Excel отчет создан: {excel_report_path}")
         
         # Формируем ответ
@@ -195,7 +233,7 @@ async def analyze_logs(
             "analysis": {
                 "basic_stats": basic_analysis,
                 "ml_results": summary,
-                "threshold_used": threshold
+                "threshold_used": threshold_float
             },
             "results": results_df.to_dict('records') if not results_df.empty else [],
             "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None
@@ -215,12 +253,18 @@ async def download_report(filename: str):
     
     **Формат Excel точно такой же, как для защиты на хакатоне.**
     """
-    # В реальном приложении нужно добавить проверку безопасности и управление временными файлами
-    file_path = os.path.join(tempfile.gettempdir(), filename)
+    # Ищем файл в директории reports
+    file_path = os.path.join(REPORTS_DIR, filename)
     
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Файл не найден")
+        # Если не найден в reports, ищем в temp
+        file_path = os.path.join(tempfile.gettempdir(), filename)
     
+    if not os.path.exists(file_path):
+        logger.warning(f"Excel файл не найден: {filename}")
+        raise HTTPException(status_code=404, detail=f"Файл {filename} не найден")
+    
+    logger.info(f"Скачивание Excel отчета: {file_path}")
     return FileResponse(
         path=file_path,
         filename=filename,

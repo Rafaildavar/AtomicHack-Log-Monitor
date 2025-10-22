@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import FileUploader from '../components/upload/FileUploader';
@@ -11,9 +11,93 @@ export default function Analyze() {
   const [logFile, setLogFile] = useState<File | null>(null);
   const [anomaliesFile, setAnomaliesFile] = useState<File | null>(null);
   const [threshold, setThreshold] = useState(0.7);
+  const [progress, setProgress] = useState(0);
+  const [progressStatus, setProgressStatus] = useState('');
   
   const navigate = useNavigate();
   const { mutate: analyze, isPending, isError, error } = useAnalyze();
+
+  // Симулируем реальный прогресс анализа
+  useEffect(() => {
+    if (isPending) {
+      setProgress(0);
+      setProgressStatus('Загрузка файла...');
+      
+      // Этап 1: Загрузка файла (0-20%)
+      const uploadInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 20) {
+            clearInterval(uploadInterval);
+            setProgressStatus('Парсинг логов...');
+            return 20;
+          }
+          return prev + 5;
+        });
+      }, 100);
+
+      // Этап 2: Парсинг (20-40%)
+      setTimeout(() => {
+        const parseInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 40) {
+              clearInterval(parseInterval);
+              setProgressStatus('Загрузка ML модели...');
+              return 40;
+            }
+            return prev + 2;
+          });
+        }, 150);
+      }, 500);
+
+      // Этап 3: Загрузка модели (40-60%)
+      setTimeout(() => {
+        const modelInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 60) {
+              clearInterval(modelInterval);
+              setProgressStatus('ML-анализ логов...');
+              return 60;
+            }
+            return prev + 2;
+          });
+        }, 200);
+      }, 2000);
+
+      // Этап 4: Анализ (60-90%)
+      setTimeout(() => {
+        const analyzeInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(analyzeInterval);
+              setProgressStatus('Создание отчета...');
+              return 90;
+            }
+            return prev + 1;
+          });
+        }, 300);
+      }, 5000);
+
+      // Этап 5: Генерация отчета (90-100%)
+      setTimeout(() => {
+        const reportInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 100) {
+              clearInterval(reportInterval);
+              setProgressStatus('Готово!');
+              return 100;
+            }
+            return prev + 2;
+          });
+        }, 200);
+      }, 15000);
+
+      return () => {
+        // Очистка всех интервалов при размонтировании
+        setProgress(0);
+        setProgressStatus('');
+      };
+    }
+  }, [isPending]);
 
   const handleFileSelect = (file: File, type: 'logs' | 'anomalies') => {
     if (type === 'logs') {
@@ -34,6 +118,8 @@ export default function Analyze() {
   const handleAnalyze = () => {
     if (!logFile) return;
 
+    console.log('🚀 Отправляю анализ с threshold:', threshold);
+
     analyze(
       {
         logFile,
@@ -43,7 +129,13 @@ export default function Analyze() {
       {
         onSuccess: (data) => {
           // Navigate to results page with data
-          navigate('/results', { state: { data } });
+          console.log('✅ Анализ завершен! Полученный threshold:', data.analysis.threshold_used);
+          navigate('/results', { state: { data, error: null } });
+        },
+        onError: (error) => {
+          // Navigate to results page with error
+          console.error('❌ Ошибка анализа:', error);
+          navigate('/results', { state: { data: null, error: error.message } });
         },
       }
     );
@@ -94,8 +186,8 @@ export default function Analyze() {
                 className="card"
               >
                 <ProgressBar
-                  progress={75}
-                  status="Анализируем логи с помощью ML..."
+                  progress={progress}
+                  status={progressStatus}
                 />
               </motion.div>
             )}

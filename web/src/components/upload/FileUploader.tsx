@@ -101,11 +101,7 @@ export default function FileUploader({
           </div>
         </label>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-6 border-2 border-atomic-blue/50 rounded-xl bg-gray-800/50"
-        >
+        <div className="p-6 border-2 border-atomic-blue/50 rounded-xl bg-gray-800/50">
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3 flex-1">
               <div className="p-2 rounded-lg bg-atomic-blue/20">
@@ -128,7 +124,7 @@ export default function FileUploader({
               <X className="w-5 h-5" />
             </button>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

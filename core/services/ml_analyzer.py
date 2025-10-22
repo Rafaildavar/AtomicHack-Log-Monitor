@@ -173,7 +173,7 @@ class MLLogAnalyzer:
                 low_confidence_anomalies.sort(key=lambda x: x['score'], reverse=True)
                 top_new_anomalies = [a for a in low_confidence_anomalies if a['score'] > 0.5]
             
-            logger.info(f"Найдено {len(low_confidence_anomalies)} новых аномалий, добавляем {len(top_new_anomalies)}:")
+            logger.debug(f"Найдено {len(low_confidence_anomalies)} новых аномалий, добавляем {len(top_new_anomalies)}:")
             
             if top_new_anomalies:
                 # Для каждой новой аномалии находим самую похожую СУЩЕСТВУЮЩУЮ аномалию

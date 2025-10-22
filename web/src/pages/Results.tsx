@@ -3,11 +3,43 @@ import { motion } from 'framer-motion';
 import { Download, ArrowLeft, FileText, AlertCircle } from 'lucide-react';
 import StatsCards from '../components/results/StatsCards';
 import type { AnalyzeResponse } from '../api/client';
+import { api } from '../api/client';
+import { downloadBlob } from '../lib/utils';
 
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
   const data = location.state?.data as AnalyzeResponse;
+  const error = location.state?.error as string | null;
+
+  // Если произошла ошибка
+  if (error) {
+    return (
+      <div className="min-h-screen bg-atomic-dark flex items-center justify-center pt-24 pb-12 px-4">
+        <div className="container mx-auto max-w-2xl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="card border-red-500/50 bg-red-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <AlertCircle className="w-8 h-8 text-red-400 flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-red-400 mb-2">Ошибка анализа</h1>
+                <p className="text-red-300/90 mb-6">{error}</p>
+                <button
+                  onClick={() => navigate('/analyze')}
+                  className="btn-primary"
+                >
+                  Вернуться к анализу
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   // Если данные не переданы, перенаправляем на главную
   if (!data) {
@@ -28,26 +60,34 @@ export default function Results() {
     );
   }
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = async () => {
     if (data.excel_report) {
-      // В реальном приложении здесь будет скачивание файла
-      console.log('Скачивание Excel:', data.excel_report);
+      try {
+        console.log('📥 Скачивание Excel отчета:', data.excel_report);
+        const response = await api.get(data.excel_report, { responseType: 'blob' });
+        const filename = `analysis_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        downloadBlob(response.data, filename);
+        console.log('✅ Excel отчет скачан:', filename);
+      } catch (error) {
+        console.error('❌ Ошибка при скачивании Excel:', error);
+        alert('Не удалось скачать отчет Excel. Попробуйте позже.');
+      }
     }
   };
 
   return (
-    <div className="min-h-screen bg-atomic-dark text-white">
+    <div className="min-h-screen bg-atomic-dark text-white pb-20">
       {/* Header */}
-      <div className="bg-atomic-darker border-b border-atomic-blue/20">
+      <div className="bg-atomic-darker border-b border-atomic-blue/20 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/analyze')}
-                className="btn-secondary flex items-center space-x-2"
+                className="btn-primary flex items-center space-x-2 hover:scale-105 transition-transform"
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Назад</span>
+                <ArrowLeft className="w-5 h-5" />
+                <span>Новый анализ</span>
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-atomic-accent">Результаты анализа</h1>
@@ -57,7 +97,7 @@ export default function Results() {
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleDownloadExcel}
-                className="btn-primary flex items-center space-x-2"
+                className="btn-secondary flex items-center space-x-2"
                 disabled={!data.excel_report}
               >
                 <Download className="w-4 h-4" />

@@ -151,7 +151,7 @@ class TestAPIHandler(BaseHTTPRequestHandler):
 
         # Создаем результаты
         results = []
-        for i, line in enumerate(lines[:10]):  # первые 10 строк
+        for i, line in enumerate(lines):  # весь файл
             if any(keyword in line.upper() for keyword in ['ERROR', 'WARN', 'EXCEPTION']):
                 results.append({
                     "ID аномалии": len(results) + 1,
@@ -190,8 +190,9 @@ class TestAPIHandler(BaseHTTPRequestHandler):
         }
 
     def log_message(self, format, *args):
-        """Отключаем стандартное логирование."""
-        pass
+        """Логирование запросов."""
+        message = format % args
+        print(f"[{self.log_date_time_string()}] {message}")
 
 def run_server():
     """Запуск сервера."""
