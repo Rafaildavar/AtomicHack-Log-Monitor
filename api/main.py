@@ -236,8 +236,10 @@ def generate_anomaly_graph(results_df: pd.DataFrame, anomalies_df: pd.DataFrame)
         
         # Сохраняем временный файл
         with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, dir=REPORTS_DIR) as f:
-            net.show(f.name)
             temp_path = f.name
+        
+        # Сохраняем граф
+        net.save_graph(temp_path)
         
         # Читаем HTML
         with open(temp_path, 'r', encoding='utf-8') as f:
