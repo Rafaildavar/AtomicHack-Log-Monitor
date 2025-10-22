@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trash2, ExternalLink, Clock, FileText } from 'lucide-react';
-import { formatDate, formatFileSize, formatNumber } from '../lib/utils';
+import { formatDate, formatNumber } from '../lib/utils';
 import type { AnalyzeResponse } from '../api/client';
 
 interface HistoryItem {

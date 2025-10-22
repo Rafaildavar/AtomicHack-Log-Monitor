@@ -5,8 +5,8 @@ export function SmartSkeleton({ isLoading, children }: { isLoading: boolean; chi
   const [showSkeleton, setShowSkeleton] = useState(false);
 
   useEffect(() => {
-    let showTimer: NodeJS.Timeout;
-    let hideTimer: NodeJS.Timeout;
+    let showTimer: ReturnType<typeof setTimeout>;
+    let hideTimer: ReturnType<typeof setTimeout>;
     
     if (isLoading) {
       // Показываем скелетон только если загрузка дольше 500мс

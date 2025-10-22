@@ -2,7 +2,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Download, ArrowLeft, FileText, AlertCircle } from 'lucide-react';
 import StatsCards from '../components/results/StatsCards';
-import { SkeletonGrid, SkeletonTable } from '../components/shared/LoadingSkeleton';
 import type { AnalyzeResponse } from '../api/client';
 import { api } from '../api/client';
 import { downloadBlob } from '../lib/utils';
