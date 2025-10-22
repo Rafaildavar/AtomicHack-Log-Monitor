@@ -3,20 +3,22 @@
   "outputDirectory": "web/dist",
   "functions": {
     "vercel_api/index.py": {
-      "runtime": "python3.11"
+      "runtime": "python3.11",
+      "maxDuration": 60
     }
-  },
-  "env": {
-    "VITE_API_URL": "@vite-api-url"
   },
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/api/.*",
       "dest": "vercel_api/index.py"
     },
     {
+      "src": "/assets/.*",
+      "dest": "web/dist/assets/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "web/dist/index.html"
+      "dest": "web/dist/$1"
     }
   ]
 }
