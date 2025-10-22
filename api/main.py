@@ -175,15 +175,25 @@ def generate_anomaly_graph(results_df: pd.DataFrame, anomalies_df: pd.DataFrame)
         
         # Берем уникальные пары аномалия-проблема
         for _, row in results_df.iterrows():
-            anom_id = str(row.get('ID аномалии', 'unknown'))
-            prob_id = str(row.get('ID проблемы', 'unknown'))
+            anom_id = int(row.get('ID аномалии', -1))
+            prob_id = int(row.get('ID проблемы', -1))
+            
+            if anom_id == -1 or prob_id == -1:
+                continue
             
             # Получаем текст аномалии и проблемы из словаря
-            anom_text = anomalies_df[anomalies_df['ID аномалии'] == int(anom_id)]['Аномалия'].values
-            prob_text = anomalies_df[anomalies_df['ID проблемы'] == int(prob_id)]['Проблема'].values
+            try:
+                anom_matches = anomalies_df[anomalies_df['ID аномалии'].astype(int) == anom_id]
+                prob_matches = anomalies_df[anomalies_df['ID проблемы'].astype(int) == prob_id]
+                
+                anom_text = anom_matches['Аномалия'].values[0] if len(anom_matches) > 0 else 'Unknown'
+                prob_text = prob_matches['Проблема'].values[0] if len(prob_matches) > 0 else 'Unknown'
+            except Exception:
+                anom_text = 'Unknown'
+                prob_text = 'Unknown'
             
-            anom_label = f"Anom {anom_id}: {anom_text[0][:30]}..." if anom_text else f"Anom {anom_id}"
-            prob_label = f"Prob {prob_id}: {prob_text[0][:30]}..." if prob_text else f"Prob {prob_id}"
+            anom_label = f"Anom {anom_id}: {str(anom_text)[:30]}..."
+            prob_label = f"Prob {prob_id}: {str(prob_text)[:30]}..."
             
             # Добавляем узлы и ребра
             G.add_node(anom_label, node_type="anomaly")
