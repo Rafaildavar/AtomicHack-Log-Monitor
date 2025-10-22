@@ -160,20 +160,23 @@ export default function Home() {
                 icon: '🌐',
                 desc: 'Удобный UI для анализа логов прямо в браузере',
                 cta: 'Начать анализ',
-                link: '/analyze'
+                link: '/analyze',
+                external: undefined
               },
               {
                 title: 'REST API',
                 icon: '⚙️',
                 desc: 'Интеграция в ваши системы через HTTP API с JSON',
                 cta: 'Документация API',
-                link: '/docs'
+                link: '/docs',
+                external: undefined
               },
               {
                 title: 'Telegram Bot',
                 icon: '🤖',
                 desc: 'Быстрый анализ прямо из мессенджера',
                 cta: 'Открыть бота',
+                link: undefined,
                 external: 'https://t.me/AtomicHackLogBot'
               }
             ].map((method, i) => (
@@ -196,14 +199,14 @@ export default function Home() {
                   >
                     {method.cta} →
                   </a>
-                ) : (
+                ) : method.link ? (
                   <Link 
                     to={method.link}
                     className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
                   >
                     {method.cta} →
                   </Link>
-                )}
+                ) : null}
               </motion.div>
             ))}
           </div>
