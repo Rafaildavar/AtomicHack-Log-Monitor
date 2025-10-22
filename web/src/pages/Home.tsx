@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Activity, Zap, Shield, Database, ArrowRight, FileText, BarChart3, Clock } from 'lucide-react';
+import { Activity, Zap, Shield, Database, ArrowRight, FileText, BarChart3, Clock, Code, Cpu, GitBranch, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -45,205 +45,205 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Key Features */}
-      <section className="py-16 px-4 bg-gradient-to-b from-transparent to-atomic-darker">
+      {/* How It Works */}
+      <section className="py-16 px-4 bg-atomic-dark">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ключевые возможности
+              Как это работает
             </h2>
             <p className="text-lg text-gray-400">
-              Комплексное решение для мониторинга критической инфраструктуры
+              4 простых шага до полного анализа ваших логов
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Feature 1 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card"
-            >
-              <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-atomic-accent" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">ML-анализ в реальном времени</h3>
-              <p className="text-gray-400">
-                Автоматическое обнаружение аномалий с использованием Sentence Transformers и semantic search
-              </p>
-            </motion.div>
-
-            {/* Feature 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="card"
-            >
-              <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-atomic-accent" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Высокая точность обнаружения</h3>
-              <p className="text-gray-400">
-                Настраиваемый порог similarity для баланса между точностью и полнотой обнаружения
-              </p>
-            </motion.div>
-
-            {/* Feature 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="card"
-            >
-              <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
-                <Database className="w-6 h-6 text-atomic-accent" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">REST API для интеграции</h3>
-              <p className="text-gray-400">
-                Готовое API для интеграции с существующими системами мониторинга и SIEM
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Workflow */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Процесс работы
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-4 gap-4">
             {[
-              { icon: FileText, title: 'Загрузка логов', desc: 'Поддержка .txt, .log, .zip' },
-              { icon: Activity, title: 'ML-обработка', desc: 'Анализ через Sentence Transformers' },
-              { icon: BarChart3, title: 'Выявление аномалий', desc: 'Сопоставление с базой проблем' },
-              { icon: Clock, title: 'Генерация отчета', desc: 'Excel с детальной трассировкой' },
-            ].map((step, idx) => (
+              { num: '1', title: 'Загрузите файл', desc: 'ZIP с логами или обычный TXT/LOG файл' },
+              { num: '2', title: 'Выберите параметры', desc: 'Порог детектирования и словарь аномалий' },
+              { num: '3', title: 'ML-анализ', desc: 'Система находит и классифицирует аномалии' },
+              { num: '4', title: 'Получите отчет', desc: 'Excel с детальными результатами' }
+            ].map((step, i) => (
               <motion.div
-                key={step.title}
+                key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="card text-center relative"
+                transition={{ delay: i * 0.1 }}
+                className="card relative"
               >
-                {idx < 3 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 bg-gradient-to-r from-atomic-blue to-transparent"></div>
-                )}
-                <div className="w-16 h-16 rounded-full bg-atomic-blue/20 flex items-center justify-center mx-auto mb-4">
-                  <step.icon className="w-8 h-8 text-atomic-accent" />
+                <div className="absolute -top-4 -right-4 w-10 h-10 bg-atomic-blue text-white rounded-full flex items-center justify-center font-bold text-lg">
+                  {step.num}
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
                 <p className="text-sm text-gray-400">{step.desc}</p>
+                {i < 3 && (
+                  <ArrowRight className="absolute -right-8 top-1/2 transform -translate-y-1/2 text-atomic-blue hidden md:block" />
+                )}
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Technical Details */}
-      <section className="py-16 px-4 bg-gradient-to-b from-atomic-darker to-transparent">
+      {/* Use Cases */}
+      <section className="py-16 px-4 bg-gradient-to-b from-atomic-darker to-atomic-dark">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Технические характеристики
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Масштабируемость</h3>
-                    <p className="text-gray-400">Обработка больших объемов логов с поддержкой пакетной загрузки</p>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Сценарии использования
+            </h2>
+            <p className="text-lg text-gray-400">
+              Решение для различных задач мониторинга
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              {
+                icon: Cpu,
+                title: 'Мониторинг инфраструктуры',
+                desc: 'Анализ логов серверов, базы данных, сетевых устройств для выявления критических ошибок'
+              },
+              {
+                icon: Shield,
+                title: 'Безопасность',
+                desc: 'Обнаружение подозрительной активности и попыток несанкционированного доступа'
+              },
+              {
+                icon: BarChart3,
+                title: 'Аналитика производительности',
+                desc: 'Выявление проблем с производительностью и узких мест в системе'
+              },
+              {
+                icon: GitBranch,
+                title: 'Отладка приложений',
+                desc: 'Быстрый анализ логов приложений для поиска ошибок и исключений'
+              }
+            ].map((useCase, i) => {
+              const Icon = useCase.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="card group hover:border-atomic-blue/50 transition-all"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4 group-hover:bg-atomic-blue/30 transition-all">
+                    <Icon className="w-6 h-6 text-atomic-accent" />
                   </div>
-                </div>
+                  <h3 className="text-lg font-bold text-white mb-2">{useCase.title}</h3>
+                  <p className="text-gray-400">{useCase.desc}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-                <div className="flex items-start space-x-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Производительность</h3>
-                    <p className="text-gray-400">Анализ логов за секунды благодаря оптимизированной ML-модели</p>
-                  </div>
-                </div>
+      {/* Integration Examples */}
+      <section className="py-16 px-4 bg-atomic-dark">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Методы интеграции
+            </h2>
+            <p className="text-lg text-gray-400">
+              Выбирайте удобный способ интеграции в вашу систему
+            </p>
+          </div>
 
-                <div className="flex items-start space-x-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Интеграция</h3>
-                    <p className="text-gray-400">Docker deployment, REST API, Telegram bot</p>
-                  </div>
-                </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                title: 'Веб-интерфейс',
+                icon: '🌐',
+                desc: 'Удобный UI для анализа логов прямо в браузере',
+                cta: 'Начать анализ'
+              },
+              {
+                title: 'REST API',
+                icon: '⚙️',
+                desc: 'Интеграция в ваши системы через HTTP API с JSON',
+                cta: 'Документация API'
+              },
+              {
+                title: 'Telegram Bot',
+                icon: '🤖',
+                desc: 'Быстрый анализ прямо из мессенджера',
+                cta: 'Открыть бота'
+              }
+            ].map((method, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="card flex flex-col"
+              >
+                <div className="text-4xl mb-4">{method.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{method.title}</h3>
+                <p className="text-gray-400 flex-1 mb-4">{method.desc}</p>
+                <button className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium">
+                  {method.cta} →
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                <div className="flex items-start space-x-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-atomic-accent mt-2"></div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Настраиваемость</h3>
-                    <p className="text-gray-400">Собственные словари аномалий и настройка порога чувствительности</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Link to="/analyze" className="btn-primary inline-flex items-center">
-                  Перейти к анализу
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
-                <div className="text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-sm text-gray-400">Типов аномалий в базе</div>
-              </div>
-              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
-                <div className="text-4xl font-bold text-white mb-2">90%</div>
-                <div className="text-sm text-gray-400">Точность анализа</div>
-              </div>
-              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
-                <div className="text-4xl font-bold text-white mb-2">&lt;5 сек</div>
-                <div className="text-sm text-gray-400">Время обработки</div>
-              </div>
-              <div className="card bg-atomic-blue/10 border-atomic-blue/30">
-                <div className="text-4xl font-bold text-white mb-2">24/7</div>
-                <div className="text-sm text-gray-400">Мониторинг</div>
-              </div>
-            </div>
+      {/* Stats */}
+      <section className="py-16 px-4 bg-gradient-to-b from-atomic-darker to-atomic-dark">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { label: '500+', desc: 'Типов аномалий', icon: '📊' },
+              { label: '90%', desc: 'Точность анализа', icon: '🎯' },
+              { label: '<5 сек', desc: 'Время обработки', icon: '⚡' },
+              { label: '24/7', desc: 'Доступность', icon: '🛡️' }
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.1 }}
+                className="card text-center"
+              >
+                <div className="text-4xl mb-2">{stat.icon}</div>
+                <div className="text-3xl font-bold text-atomic-accent mb-1">{stat.label}</div>
+                <div className="text-gray-400">{stat.desc}</div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4">
+      <section className="py-20 px-4 bg-atomic-dark">
         <div className="container mx-auto max-w-4xl">
-          <div className="card text-center space-y-6 bg-gradient-to-r from-atomic-blue/20 to-atomic-accent/20 border-atomic-blue/30">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Начните работу с системой
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="card bg-gradient-to-r from-atomic-blue/20 to-atomic-accent/20 border-atomic-blue/50 text-center"
+          >
+            <Award className="w-16 h-16 text-atomic-accent mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Готовы начать?
             </h2>
-            <p className="text-xl text-gray-300">
-              Загрузите логи и получите детальный анализ аномалий
+            <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+              Загрузите ваши логи и получите детальный анализ за считанные секунды
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/analyze" className="btn-primary text-lg px-8 py-4">
-                Анализировать логи
+                Начать анализ
+                <ArrowRight className="w-5 h-5 ml-2 inline" />
               </Link>
-              <a 
-                href="https://t.me/AtomicHackLogBot" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="btn-secondary text-lg px-8 py-4"
-              >
-                Telegram Bot
-              </a>
+              <Link to="/about" className="btn-secondary text-lg px-8 py-4">
+                Узнать больше
+              </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>
