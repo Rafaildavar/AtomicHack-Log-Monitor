@@ -138,6 +138,86 @@ export default function Dashboard() {
             </div>
           )}
         </motion.div>
+
+        {/* Последний анализ с деталями */}
+        {analysisHistory.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-8"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6">📈 Последний анализ</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Детали последнего анализа */}
+              <motion.div className="card">
+                <h3 className="text-lg font-bold text-white mb-4">Информация</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Файл:</span>
+                    <span className="text-white font-semibold">{analysisHistory[0].filename}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Время:</span>
+                    <span className="text-white font-semibold">
+                      {new Date(analysisHistory[0].timestamp).toLocaleString('ru-RU')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Проблем найдено:</span>
+                    <span className="text-red-400 font-semibold text-lg">
+                      {analysisHistory[0].data?.results?.length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Уникальных аномалий:</span>
+                    <span className="text-atomic-accent font-semibold text-lg">
+                      {analysisHistory[0].data?.analysis?.ml_results?.unique_anomalies || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Порог схожести:</span>
+                    <span className="text-white font-semibold">
+                      {analysisHistory[0].data?.analysis?.threshold_used || 0.7}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Базовая статистика последнего анализа */}
+              <motion.div className="card">
+                <h3 className="text-lg font-bold text-white mb-4">Статистика</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Всего строк:</span>
+                    <span className="text-white font-semibold">
+                      {analysisHistory[0].data?.analysis?.basic_stats?.total_lines || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-red-400">ERROR:</span>
+                    <span className="text-red-400 font-semibold">
+                      {analysisHistory[0].data?.analysis?.basic_stats?.error_count || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-yellow-400">WARNING:</span>
+                    <span className="text-yellow-400 font-semibold">
+                      {analysisHistory[0].data?.analysis?.basic_stats?.warning_count || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-green-400">INFO:</span>
+                    <span className="text-green-400 font-semibold">
+                      {analysisHistory[0].data?.analysis?.basic_stats?.info_count || 0}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
