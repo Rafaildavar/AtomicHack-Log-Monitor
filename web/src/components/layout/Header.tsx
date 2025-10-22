@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Activity, Github, Menu } from 'lucide-react';
+import { Activity, Github, Menu, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Header() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-atomic-darker/80 backdrop-blur-lg border-b border-gray-800">
       <div className="container mx-auto px-4">
@@ -61,7 +64,7 @@ export default function Header() {
           {/* Actions */}
           <div className="flex items-center space-x-4">
             <a
-              href="https://github.com/blacklotus-team/atomichack"
+              href="https://github.com/Rafaildavar/AtomicHack-Log-Monitor"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-all"
@@ -69,6 +72,19 @@ export default function Header() {
               <Github className="w-5 h-5" />
               <span>GitHub</span>
             </a>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
+              title={`Переключиться на ${theme === 'dark' ? 'светлый' : 'тёмный'} режим`}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
             
             <Link
               to="/analyze"

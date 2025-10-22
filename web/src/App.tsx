@@ -4,12 +4,14 @@ import { Suspense, lazy, useEffect } from 'react';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Lazy load heavy components
 const Analyze = lazy(() => import('./pages/Analyze'));
 const Results = lazy(() => import('./pages/Results'));
 const About = lazy(() => import('./pages/About'));
 const Documentation = lazy(() => import('./pages/Documentation'));
+const History = lazy(() => import('./pages/History'));
 
 // Loading Fallback
 const LoadingFallback = () => (
@@ -43,30 +45,38 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function AppContent() {
   console.log('🚀 App loaded - Full version with code splitting!');
   return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <div className="flex flex-col min-h-screen bg-atomic-dark">
+        <Header />
+        <main className="flex-1">
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/analyze" element={<Analyze />} />
+              <Route path="/results" element={<Results />} />
+              <Route path="/dashboard" element={<div className="pt-24 px-4"><div className="container mx-auto"><h1 className="text-4xl font-bold text-white">Dashboard (Coming soon)</h1></div></div>} />
+              <Route path="/history" element={<History />} />
+              <Route path="/docs" element={<Documentation />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+          </Suspense>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ScrollToTop />
-        <div className="flex flex-col min-h-screen bg-atomic-dark">
-          <Header />
-          <main className="flex-1">
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/analyze" element={<Analyze />} />
-                <Route path="/results" element={<Results />} />
-                <Route path="/dashboard" element={<div className="pt-24 px-4"><div className="container mx-auto"><h1 className="text-4xl font-bold text-white">Dashboard (Coming soon)</h1></div></div>} />
-                <Route path="/history" element={<div className="pt-24 px-4"><div className="container mx-auto"><h1 className="text-4xl font-bold text-white">History (Coming soon)</h1></div></div>} />
-                <Route path="/docs" element={<Documentation />} />
-                <Route path="/about" element={<About />} />
-              </Routes>
-            </Suspense>
-          </main>
-          <Footer />
-        </div>
-      </BrowserRouter>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

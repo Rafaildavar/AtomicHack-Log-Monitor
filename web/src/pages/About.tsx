@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Award, Users, Zap, Code, Github } from 'lucide-react';
+import { Award, Users, Zap, Code, Github, MessageCircle, Settings, Globe, Trophy, Target, Package, Flower, Smartphone } from 'lucide-react';
 
 export default function About() {
   return (
@@ -80,7 +80,16 @@ export default function About() {
                 transition={{ delay: i * 0.1 }}
                 className="card"
               >
-                <h3 className="text-2xl font-bold text-white mb-2">{item.title}</h3>
+                <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
+                  {i === 0 && <MessageCircle className="w-6 h-6 text-atomic-accent" />}
+                  {i === 1 && <Settings className="w-6 h-6 text-atomic-accent" />}
+                  {i === 2 && <Globe className="w-6 h-6 text-atomic-accent" />}
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {i === 0 && 'Telegram Bot'}
+                  {i === 1 && 'REST API'}
+                  {i === 2 && 'Веб-интерфейс'}
+                </h3>
                 <p className="text-gray-400 mb-4">{item.desc}</p>
                 <ul className="space-y-2">
                   {item.features.map((feature, j) => (
@@ -174,23 +183,30 @@ export default function About() {
 
           <div className="grid md:grid-cols-4 gap-6">
             {[
-              { icon: '🏆', title: '4-е место', desc: 'AtomicHack Hackathon 2025' },
-              { icon: '⚡', title: '<5 сек', desc: 'Время анализа' },
-              { icon: '🎯', title: '90%', desc: 'Точность' },
-              { icon: '📦', title: '500+', desc: 'Типов аномалий' }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="card text-center"
-              >
-                <div className="text-4xl mb-3">{item.icon}</div>
-                <h3 className="text-xl font-bold text-white mb-1">{item.title}</h3>
-                <p className="text-sm text-gray-400">{item.desc}</p>
-              </motion.div>
-            ))}
+              { icon: Trophy, title: '4-е место', desc: 'AtomicHack Hackathon 2025' },
+              { icon: Zap, title: '<5 сек', desc: 'Время анализа' },
+              { icon: Target, title: '90%', desc: 'Точность' },
+              { icon: Package, title: '500+', desc: 'Типов аномалий' }
+            ].map((item, i) => {
+              const IconComponent = item.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="card text-center"
+                >
+                  <div className="flex justify-center mb-3">
+                    <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center">
+                      <IconComponent className="w-6 h-6 text-atomic-accent" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-1">{item.title}</h3>
+                  <p className="text-sm text-gray-400">{item.desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.section>
 
@@ -254,7 +270,7 @@ export default function About() {
           className="mb-20"
         >
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Команда Black Lotus 🌸</h2>
+            <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center gap-2">Команда Black Lotus <Flower className="w-8 h-8 text-atomic-accent" /></h2>
             <p className="text-gray-400">Разработчики, ML-специалисты и дизайнеры</p>
           </div>
 
@@ -338,7 +354,8 @@ export default function About() {
               rel="noopener noreferrer"
               className="btn-primary inline-flex items-center space-x-2"
             >
-              <span>📱 Telegram Bot</span>
+              <Smartphone className="w-5 h-5" />
+              <span>Telegram Bot</span>
             </a>
             <a
               href="https://github.com/Rafaildavar/AtomicHack-Log-Monitor"

@@ -128,7 +128,19 @@ export default function Analyze() {
       },
       {
         onSuccess: (data) => {
-          // Navigate to results page with data
+          // Сохраняем в историю
+          const historyItem = {
+            id: `${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            filename: logFile.name,
+            data,
+          };
+
+          const saved = localStorage.getItem('analysis_history');
+          const history = saved ? JSON.parse(saved) : [];
+          history.unshift(historyItem); // Добавляем в начало
+          localStorage.setItem('analysis_history', JSON.stringify(history.slice(0, 50))); // Сохраняем последние 50
+
           console.log('✅ Анализ завершен! Полученный threshold:', data.analysis.threshold_used);
           navigate('/results', { state: { data, error: null } });
         },

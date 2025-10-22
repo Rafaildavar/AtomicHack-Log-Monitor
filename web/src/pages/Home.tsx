@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Activity, Shield, BarChart3, ArrowRight, Award, Cpu, GitBranch } from 'lucide-react';
+import { Activity, Shield, BarChart3, ArrowRight, Award, Cpu, GitBranch, Globe, Settings, MessageCircle, Package, Target, Zap, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -157,7 +157,7 @@ export default function Home() {
             {[
               {
                 title: 'Веб-интерфейс',
-                icon: '🌐',
+                icon: Globe,
                 desc: 'Удобный UI для анализа логов прямо в браузере',
                 cta: 'Начать анализ',
                 link: '/analyze',
@@ -165,7 +165,7 @@ export default function Home() {
               },
               {
                 title: 'REST API',
-                icon: '⚙️',
+                icon: Settings,
                 desc: 'Интеграция в ваши системы через HTTP API с JSON',
                 cta: 'Документация API',
                 link: '/docs',
@@ -173,42 +173,47 @@ export default function Home() {
               },
               {
                 title: 'Telegram Bot',
-                icon: '🤖',
+                icon: MessageCircle,
                 desc: 'Быстрый анализ прямо из мессенджера',
                 cta: 'Открыть бота',
                 link: undefined,
                 external: 'https://t.me/AtomicHackLogBot'
               }
-            ].map((method, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="card flex flex-col"
-              >
-                <div className="text-4xl mb-4">{method.icon}</div>
-                <h3 className="text-xl font-bold text-white mb-2">{method.title}</h3>
-                <p className="text-gray-400 flex-1 mb-4">{method.desc}</p>
-                {method.external ? (
-                  <a 
-                    href={method.external} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
-                  >
-                    {method.cta} →
-                  </a>
-                ) : method.link ? (
-                  <Link 
-                    to={method.link}
-                    className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
-                  >
-                    {method.cta} →
-                  </Link>
-                ) : null}
-              </motion.div>
-            ))}
+            ].map((method, i) => {
+              const MethodIcon = method.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="card flex flex-col"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center mb-4">
+                    <MethodIcon className="w-6 h-6 text-atomic-accent" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{method.title}</h3>
+                  <p className="text-gray-400 flex-1 mb-4">{method.desc}</p>
+                  {method.external ? (
+                    <a 
+                      href={method.external} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
+                    >
+                      {method.cta} →
+                    </a>
+                  ) : method.link ? (
+                    <Link 
+                      to={method.link}
+                      className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
+                    >
+                      {method.cta} →
+                    </Link>
+                  ) : null}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -218,23 +223,30 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-6">
             {[
-              { label: '500+', desc: 'Типов аномалий', icon: '📊' },
-              { label: '90%', desc: 'Точность анализа', icon: '🎯' },
-              { label: '<5 сек', desc: 'Время обработки', icon: '⚡' },
-              { label: '24/7', desc: 'Доступность', icon: '🛡️' }
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="card text-center"
-              >
-                <div className="text-4xl mb-2">{stat.icon}</div>
-                <div className="text-3xl font-bold text-atomic-accent mb-1">{stat.label}</div>
-                <div className="text-gray-400">{stat.desc}</div>
-              </motion.div>
-            ))}
+              { label: '500+', desc: 'Типов аномалий', icon: Package },
+              { label: '90%', desc: 'Точность анализа', icon: Target },
+              { label: '<5 сек', desc: 'Время обработки', icon: Zap },
+              { label: '24/7', desc: 'Доступность', icon: Lock }
+            ].map((stat, i) => {
+              const StatIcon = stat.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="card text-center"
+                >
+                  <div className="flex justify-center mb-2">
+                    <div className="w-12 h-12 rounded-lg bg-atomic-blue/20 flex items-center justify-center">
+                      <StatIcon className="w-6 h-6 text-atomic-accent" />
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-atomic-accent mb-1">{stat.label}</div>
+                  <div className="text-gray-400">{stat.desc}</div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
