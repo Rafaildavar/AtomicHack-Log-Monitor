@@ -6,6 +6,7 @@ import type { AnalyzeResponse } from '../api/client';
 import { api } from '../api/client';
 import { downloadBlob } from '../lib/utils';
 import LogVisualization from '../components/results/LogVisualization';
+import AnomalyGraph from '../components/results/AnomalyGraph';
 
 export default function Results() {
   const location = useLocation();
@@ -182,6 +183,9 @@ export default function Results() {
 
         {/* График логов */}
         <LogVisualization htmlContent={data.log_visualization} />
+
+        {/* Граф аномалий */}
+        <AnomalyGraph htmlContent={data.anomaly_graph} />
 
         {/* Список аномалий */}
         <motion.div

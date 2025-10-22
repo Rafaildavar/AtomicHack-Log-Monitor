@@ -151,6 +151,104 @@ def generate_log_visualization(logs_df: pd.DataFrame) -> str:
         return f"<div style='color: red;'>Ошибка при генерации графика: {str(e)}</div>"
 
 
+def generate_anomaly_graph(results_df: pd.DataFrame, anomalies_df: pd.DataFrame) -> str:
+    """
+    Генерирует интерактивный граф связей между аномалиями и проблемами.
+    
+    Args:
+        results_df: DataFrame с результатами анализа
+        anomalies_df: DataFrame со словарем аномалий
+    
+    Returns:
+        HTML строка с интерактивным графом
+    """
+    try:
+        import networkx as nx
+        from pyvis.network import Network
+        import tempfile
+        
+        if results_df.empty:
+            return "<div>Нет аномалий для построения графа</div>"
+        
+        # Создаем граф
+        G = nx.Graph()
+        
+        # Берем уникальные пары аномалия-проблема
+        for _, row in results_df.iterrows():
+            anom_id = str(row.get('ID аномалии', 'unknown'))
+            prob_id = str(row.get('ID проблемы', 'unknown'))
+            
+            # Получаем текст аномалии и проблемы из словаря
+            anom_text = anomalies_df[anomalies_df['ID аномалии'] == int(anom_id)]['Аномалия'].values
+            prob_text = anomalies_df[anomalies_df['ID проблемы'] == int(prob_id)]['Проблема'].values
+            
+            anom_label = f"Anom {anom_id}: {anom_text[0][:30]}..." if anom_text else f"Anom {anom_id}"
+            prob_label = f"Prob {prob_id}: {prob_text[0][:30]}..." if prob_text else f"Prob {prob_id}"
+            
+            # Добавляем узлы и ребра
+            G.add_node(anom_label, node_type="anomaly")
+            G.add_node(prob_label, node_type="problem")
+            G.add_edge(anom_label, prob_label)
+        
+        # Создаем визуализацию PyVis
+        net = Network(
+            height="500px",
+            width="100%",
+            bgcolor="#0a0e27",
+            font_color="white",
+            directed=False
+        )
+        
+        net.from_nx(G)
+        
+        # Настройки внешнего вида
+        net.set_options("""
+        {
+          "physics": {
+            "enabled": true,
+            "barnesHut": {
+              "gravitationalConstant": -2000,
+              "centralGravity": 0.3,
+              "springLength": 150,
+              "springConstant": 0.04
+            }
+          },
+          "nodes": {
+            "font": {"size": 16, "face": "Arial"},
+            "scaling": {"min": 20, "max": 40}
+          },
+          "edges": {
+            "color": {"color": "#00D4FF", "opacity": 0.6},
+            "smooth": true
+          }
+        }
+        """)
+        
+        # Сохраняем временный файл
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, dir=REPORTS_DIR) as f:
+            net.show(f.name)
+            temp_path = f.name
+        
+        # Читаем HTML
+        with open(temp_path, 'r', encoding='utf-8') as f:
+            html = f.read()
+        
+        # Очищаем файл
+        try:
+            os.remove(temp_path)
+        except:
+            pass
+        
+        return html
+        
+    except ImportError:
+        logger.error("Ошибка: networkx или pyvis не установлены")
+        return "<div style='color: orange;'>GraphX libraries not available</div>"
+    except Exception as e:
+        logger.error(f"Ошибка при генерации графа: {e}")
+        return f"<div style='color: red;'>Ошибка при генерации графа: {str(e)}</div>"
+
+
 @app.get("/")
 async def root():
     """Корневой эндпоинт."""
@@ -326,7 +424,8 @@ async def analyze_logs(
             },
             "results": results_df.to_dict('records') if not results_df.empty else [],
             "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None,
-            "log_visualization": generate_log_visualization(logs_df) if not logs_df.empty else None
+            "log_visualization": generate_log_visualization(logs_df) if not logs_df.empty else None,
+            "anomaly_graph": generate_anomaly_graph(results_df, anomalies_df) if not results_df.empty else None
         }
         
         return response

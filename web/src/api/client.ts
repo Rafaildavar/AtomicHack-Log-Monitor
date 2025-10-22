@@ -50,6 +50,7 @@ export interface AnalyzeResponse {
   results: AnalysisResult[];
   excel_report: string | null;
   log_visualization: string | null;
+  anomaly_graph: string | null;
 }
 
 // API Methods
