@@ -159,19 +159,22 @@ export default function Home() {
                 title: 'Веб-интерфейс',
                 icon: '🌐',
                 desc: 'Удобный UI для анализа логов прямо в браузере',
-                cta: 'Начать анализ'
+                cta: 'Начать анализ',
+                link: '/analyze'
               },
               {
                 title: 'REST API',
                 icon: '⚙️',
                 desc: 'Интеграция в ваши системы через HTTP API с JSON',
-                cta: 'Документация API'
+                cta: 'Документация API',
+                link: '/docs'
               },
               {
                 title: 'Telegram Bot',
                 icon: '🤖',
                 desc: 'Быстрый анализ прямо из мессенджера',
-                cta: 'Открыть бота'
+                cta: 'Открыть бота',
+                external: 'https://t.me/AtomicHackLogBot'
               }
             ].map((method, i) => (
               <motion.div
@@ -184,9 +187,23 @@ export default function Home() {
                 <div className="text-4xl mb-4">{method.icon}</div>
                 <h3 className="text-xl font-bold text-white mb-2">{method.title}</h3>
                 <p className="text-gray-400 flex-1 mb-4">{method.desc}</p>
-                <button className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium">
-                  {method.cta} →
-                </button>
+                {method.external ? (
+                  <a 
+                    href={method.external} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
+                  >
+                    {method.cta} →
+                  </a>
+                ) : (
+                  <Link 
+                    to={method.link}
+                    className="text-atomic-accent hover:text-atomic-blue transition-colors text-sm font-medium inline-flex items-center"
+                  >
+                    {method.cta} →
+                  </Link>
+                )}
               </motion.div>
             ))}
           </div>
