@@ -1,7 +1,7 @@
-# AtomicHack Log Monitor - Dockerfile
+# AtomicHack Log Monitor API - Dockerfile
 # Команда Black Lotus
 
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -19,19 +19,20 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем исходный код
-COPY src/ ./src/
-COPY .env.example .env
+COPY api/ ./api/
+COPY core/ ./core/
+COPY src/bot/services/anomalies_problems.csv ./src/bot/services/
 
-# Создаем директории для данных
-RUN mkdir -p downloads reports
+# Создаем директории для отчетов
+RUN mkdir -p api/reports
 
 # Устанавливаем переменные окружения
 ENV PYTHONUNBUFFERED=1
-ENV AIOHTTP_CLIENT_TIMEOUT=600
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# Открываем порт (если потребуется webhook)
-EXPOSE 8080
+# Открываем порт для API
+EXPOSE 8001
 
-# Запускаем бота
-CMD ["python", "-m", "src.bot.main"]
+# Запускаем FastAPI
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8001"]
 
