@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-// For Vercel: use relative path /api, for local: use localhost
-const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-  ? 'http://localhost:8001'
-  : '/api';
+// Base URL priority: VITE_API_URL -> localhost -> relative /api (Vercel)
+const API_BASE_URL =
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) ||
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:8001'
+    : '/api');
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
