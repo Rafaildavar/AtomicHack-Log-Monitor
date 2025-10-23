@@ -1,6 +1,0 @@
-ID сценария,ID аномалии,ID проблемы,Файл с проблемой,№ строки,Строка из лога
-1,161,21,app_server1_log.txt,12438,2025-11-25T20:12:17 ERROR network: Network interface eth0 link failure
-2,205,26,app_server1_log.txt,45017,2025-02-08T01:50:16 ERROR database: SSL certificate expired
-3,341,44,app_server1_log.txt,4993,2025-08-18T11:53:12 ERROR hardware: ESXi hypervisor kernel panic
-4,12,3,app_server1_log.txt,47747,2025-04-30T22:15:46 ERROR hardware: CPU0: Core temperature above threshold
-5,36,6,app_server1_log.txt,43502,2025-12-11T02:05:01 ERROR hardware: SSD wear-leveling threshold exceeded
