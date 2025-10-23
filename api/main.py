@@ -13,7 +13,6 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, F
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
-import plotly.graph_objects as go
 
 # Импортируем логику коллеги из core
 import sys
@@ -61,231 +60,6 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 logger.info("⏳ Загрузка ML модели при старте API...")
 ml_analyzer._load_model()
 logger.info("✅ ML модель загружена и готова к анализам")
-
-
-async def _save_upload_file(upload_file: UploadFile, destination_path: str) -> str:
-    """
-    Сохраняет загруженный файл на диск по частям, чтобы не занимать много памяти.
-    Возвращает путь к сохраненному файлу.
-    """
-    os.makedirs(os.path.dirname(destination_path), exist_ok=True)
-    # Читаем и пишем по 1 МБ
-    chunk_size_bytes = 1024 * 1024
-    with open(destination_path, 'wb') as out_file:
-        while True:
-            chunk = await upload_file.read(chunk_size_bytes)
-            if not chunk:
-                break
-            out_file.write(chunk)
-    # Сбрасываем указатель, если файл понадобится повторно читать
-    try:
-        await upload_file.seek(0)
-    except Exception:
-        pass
-    return destination_path
-
-
-def generate_log_visualization(logs_df: pd.DataFrame) -> str:
-    """
-    Генерирует интерактивный HTML график распределения логов по времени.
-    
-    Args:
-        logs_df: DataFrame с логами (columns: datetime, level, text, filename, line_number)
-    
-    Returns:
-        HTML строка с графиком
-    """
-    try:
-        # Подготовляем данные
-        df = logs_df.copy()
-        
-        # Убедимся что у нас есть нужные колонки
-        if 'datetime' not in df.columns or 'level' not in df.columns:
-            logger.warning("Не хватает колонок для графика, используем пустой датафрейм")
-            return "<div>Недостаточно данных для графика</div>"
-        
-        # Преобразуем datetime в нужный формат
-        df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
-        df = df.dropna(subset=['datetime'])
-        
-        if df.empty:
-            return "<div>Нет валидных данных для построения графика</div>"
-        
-        # Считаем количество логов по уровню
-        level_counts = df['level'].value_counts().to_dict()
-        
-        # Определяем порядок и цвета
-        level_order = ["INFO", "WARNING", "ERROR"]
-        color_map = {
-            "INFO": "#87CEEB",      # Light sky blue
-            "WARNING": "#FFD700",    # Gold
-            "ERROR": "#FF6347"       # Tomato
-        }
-        
-        # Фильтруем только известные уровни
-        df = df[df['level'].isin(level_order)]
-        
-        if df.empty:
-            return "<div>Нет данных в известных уровнях логирования</div>"
-        
-        # Для очень больших наборов данных уменьшим выборку, чтобы не раздувать ответ
-        max_points = 20000
-        if len(df) > max_points:
-            df = df.sample(n=max_points, random_state=42)
-
-        # Создаем интерактивный scatter график
-        fig = go.Figure()
-        
-        for level in level_order:
-            level_data = df[df['level'] == level]
-            if not level_data.empty:
-                count = len(level_data)
-                fig.add_trace(go.Scatter(
-                    x=level_data['datetime'],
-                    y=[level] * count,
-                    mode='markers',
-                    name=f"{level} ({count})",
-                    marker=dict(
-                        size=10,
-                        color=color_map.get(level, "#999999"),
-                        opacity=0.8,
-                        line=dict(width=1, color="white")
-                    ),
-                    text=level_data['text'].astype(str),
-                    hovertemplate='<b>%{y}</b><br>Время: %{x}<br>Сообщение: %{text}<extra></extra>'
-                ))
-        
-        # Обновляем layout
-        fig.update_layout(
-            title="📊 Распределение логов по времени",
-            xaxis_title="Время",
-            yaxis_title="Уровень логирования",
-            template="plotly_dark",
-            height=400,
-            hovermode='closest',
-            yaxis=dict(categoryorder="array", categoryarray=level_order),
-            plot_bgcolor="#0a0e27",
-            paper_bgcolor="#0a0e27",
-            font=dict(color="white", family="Arial, sans-serif")
-        )
-        
-        # Возвращаем HTML
-        html = fig.to_html(include_plotlyjs='cdn', config={'responsive': True})
-        return html
-        
-    except Exception as e:
-        logger.error(f"Ошибка при генерации графика: {e}")
-        return f"<div style='color: red;'>Ошибка при генерации графика: {str(e)}</div>"
-
-
-def generate_anomaly_graph(results_df: pd.DataFrame, anomalies_df: pd.DataFrame) -> str:
-    """
-    Генерирует интерактивный граф связей между аномалиями и проблемами.
-    
-    Args:
-        results_df: DataFrame с результатами анализа
-        anomalies_df: DataFrame со словарем аномалий
-    
-    Returns:
-        HTML строка с интерактивным графом
-    """
-    try:
-        import networkx as nx
-        from pyvis.network import Network
-        import tempfile
-        
-        if results_df.empty:
-            return "<div>Нет аномалий для построения графа</div>"
-        
-        # Создаем граф
-        G = nx.Graph()
-        
-        # Берем уникальные пары аномалия-проблема
-        for _, row in results_df.iterrows():
-            anom_id = int(row.get('ID аномалии', -1))
-            prob_id = int(row.get('ID проблемы', -1))
-            
-            if anom_id == -1 or prob_id == -1:
-                continue
-            
-            # Получаем текст аномалии и проблемы из словаря
-            try:
-                anom_matches = anomalies_df[anomalies_df['ID аномалии'].astype(int) == anom_id]
-                prob_matches = anomalies_df[anomalies_df['ID проблемы'].astype(int) == prob_id]
-                
-                anom_text = anom_matches['Аномалия'].values[0] if len(anom_matches) > 0 else 'Unknown'
-                prob_text = prob_matches['Проблема'].values[0] if len(prob_matches) > 0 else 'Unknown'
-            except Exception:
-                anom_text = 'Unknown'
-                prob_text = 'Unknown'
-            
-            anom_label = f"Anom {anom_id}: {str(anom_text)[:30]}..."
-            prob_label = f"Prob {prob_id}: {str(prob_text)[:30]}..."
-            
-            # Добавляем узлы и ребра
-            G.add_node(anom_label, node_type="anomaly")
-            G.add_node(prob_label, node_type="problem")
-            G.add_edge(anom_label, prob_label)
-        
-        # Создаем визуализацию PyVis
-        net = Network(
-            height="500px",
-            width="100%",
-            bgcolor="#0a0e27",
-            font_color="white",
-            directed=False
-        )
-        
-        net.from_nx(G)
-        
-        # Настройки внешнего вида
-        net.set_options("""
-        {
-          "physics": {
-            "enabled": true,
-            "barnesHut": {
-              "gravitationalConstant": -2000,
-              "centralGravity": 0.3,
-              "springLength": 150,
-              "springConstant": 0.04
-            }
-          },
-          "nodes": {
-            "font": {"size": 16, "face": "Arial"},
-            "scaling": {"min": 20, "max": 40}
-          },
-          "edges": {
-            "color": {"color": "#00D4FF", "opacity": 0.6},
-            "smooth": true
-          }
-        }
-        """)
-        
-        # Сохраняем временный файл
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, dir=REPORTS_DIR) as f:
-            temp_path = f.name
-        
-        # Сохраняем граф
-        net.save_graph(temp_path)
-        
-        # Читаем HTML
-        with open(temp_path, 'r', encoding='utf-8') as f:
-            html = f.read()
-        
-        # Очищаем файл
-        try:
-            os.remove(temp_path)
-        except:
-            pass
-        
-        return html
-        
-    except ImportError:
-        logger.error("Ошибка: networkx или pyvis не установлены")
-        return "<div style='color: orange;'>GraphX libraries not available</div>"
-    except Exception as e:
-        logger.error(f"Ошибка при генерации графа: {e}")
-        return f"<div style='color: red;'>Ошибка при генерации графа: {str(e)}</div>"
 
 
 @app.get("/")
@@ -348,9 +122,11 @@ async def analyze_logs(
         logger.info(f"Получен запрос на анализ: {log_file.filename}")
         logger.info(f"🎯 Используемый порог схожести: {threshold_float}")
         
-        # Сохраняем загруженный файл с логами (поштучно, чтобы избежать OOM)
+        # Сохраняем загруженный файл с логами
         log_file_path = os.path.join(temp_dir, log_file.filename)
-        await _save_upload_file(log_file, log_file_path)
+        with open(log_file_path, 'wb') as f:
+            content = await log_file.read()
+            f.write(content)
         
         # Определяем файлы с логами
         if log_file.filename.endswith('.zip'):
@@ -377,7 +153,9 @@ async def analyze_logs(
         if anomalies_file:
             logger.info(f"Используем пользовательский словарь: {anomalies_file.filename}")
             anomalies_path = os.path.join(temp_dir, anomalies_file.filename)
-            await _save_upload_file(anomalies_file, anomalies_path)
+            with open(anomalies_path, 'wb') as f:
+                content = await anomalies_file.read()
+                f.write(content)
         else:
             # Проверяем, только если это ZIP архив
             if log_file.filename.lower().endswith('.zip'):
@@ -450,10 +228,6 @@ async def analyze_logs(
             logger.info(f"Excel отчет создан: {excel_report_path}")
         
         # Формируем ответ
-        # Для очень больших результатов отключаем тяжелые HTML графы в ответе
-        enable_log_vis = not logs_df.empty and len(logs_df) <= 100_000
-        enable_anomaly_graph = not results_df.empty and len(results_df) <= 500
-
         response = {
             "status": "success",
             "analysis": {
@@ -462,9 +236,7 @@ async def analyze_logs(
                 "threshold_used": threshold_float
             },
             "results": results_df.to_dict('records') if not results_df.empty else [],
-            "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None,
-            "log_visualization": generate_log_visualization(logs_df) if enable_log_vis else None,
-            "anomaly_graph": generate_anomaly_graph(results_df, anomalies_df) if enable_anomaly_graph else None
+            "excel_report": f"/api/v1/download/{os.path.basename(excel_report_path)}" if excel_report_path else None
         }
         
         return response
