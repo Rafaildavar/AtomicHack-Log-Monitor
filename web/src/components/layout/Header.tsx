@@ -42,12 +42,6 @@ export default function Header() {
               Dashboard
             </Link>
             <Link 
-              to="/realtime" 
-              className="text-gray-300 hover:text-white transition-colors font-medium"
-            >
-              Реал-тайм
-            </Link>
-            <Link 
               to="/history" 
               className="text-gray-300 hover:text-white transition-colors font-medium"
             >

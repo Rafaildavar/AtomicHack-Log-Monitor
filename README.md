@@ -286,7 +286,7 @@ MIT License - см. файл LICENSE для деталей.
 
 ## Авторы
 
-Команда Atomic Black Lotus - Хакатон МИФИ 2024
+Команда Atomic Black Lotus - Хакатон МИФИ 2025
 
 ## Контакты
 

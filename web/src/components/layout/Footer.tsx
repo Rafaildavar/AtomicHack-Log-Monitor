@@ -97,7 +97,7 @@ export default function Footer() {
             <div className="space-y-2">
               <p className="text-white font-semibold">Black Lotus</p>
               <p className="text-sm text-gray-400">
-                4-е место на AtomicHack Hackathon 2025
+                AtomicHack Hackathon 2025
               </p>
               <p className="text-xs text-gray-500 mt-4">
                 © 2025 Black Lotus. Все права защищены.

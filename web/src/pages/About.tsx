@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Award, Users, Zap, Code, Github, MessageCircle, Settings, Globe, Trophy, Target, Package, Flower, Smartphone } from 'lucide-react';
+import { Award, Users, Zap, Code, Github, MessageCircle, Settings, Globe, Shield, Target, Package, Flower, Smartphone } from 'lucide-react';
 
 export default function About() {
   return (
@@ -183,7 +183,7 @@ export default function About() {
 
           <div className="grid md:grid-cols-4 gap-6">
             {[
-              { icon: Trophy, title: '4-е место', desc: 'AtomicHack Hackathon 2025' },
+              { icon: Shield, title: 'Безопасность', desc: 'Enterprise-ready' },
               { icon: Zap, title: '<5 сек', desc: 'Время анализа' },
               { icon: Target, title: '90%', desc: 'Точность' },
               { icon: Package, title: '500+', desc: 'Типов аномалий' }

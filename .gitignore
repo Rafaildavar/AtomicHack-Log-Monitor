@@ -72,6 +72,8 @@ Slide_*.txt
 *_Slide.md
 *_Comparison.md
 *_Content.md
+Realtime_*.txt
+Project_*.txt
 
 # Data files and reports
 *.csv
