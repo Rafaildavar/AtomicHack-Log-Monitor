@@ -28,5 +28,18 @@ export default defineConfig({
     port: 5173,
     middlewareMode: false,
     hmr: true,
+    proxy: {
+      '/api': {
+        target: 'http://87.228.88.162',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path,
+      },
+      '/health': {
+        target: 'http://87.228.88.162',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 })

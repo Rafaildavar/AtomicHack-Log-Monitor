@@ -1,4 +1,7 @@
 {
   "buildCommand": "cd web && npm install && npm run build",
-  "outputDirectory": "web/dist"
+  "outputDirectory": "web/dist",
+  "env": {
+    "VITE_API_URL": "http://87.228.88.162"
+  }
 }

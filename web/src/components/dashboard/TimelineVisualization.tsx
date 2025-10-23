@@ -8,7 +8,7 @@ interface TimelineVisualizationProps {
 
 export default function TimelineVisualization({ className = '' }: TimelineVisualizationProps) {
   const [htmlContent, setHtmlContent] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
