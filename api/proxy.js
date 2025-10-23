@@ -10,7 +10,11 @@ export default async function handler(req, res) {
 
   try {
     const { method, body, headers } = req;
-    const apiUrl = `http://87.228.88.162${req.url}`;
+    // Извлекаем путь из URL (убираем /api префикс)
+    const path = req.url.replace('/api', '');
+    const apiUrl = `http://87.228.88.162${path}`;
+    
+    console.log(`Proxying ${method} ${req.url} -> ${apiUrl}`);
     
     // Удаляем host заголовок для избежания конфликтов
     const { host, ...cleanHeaders } = headers;
@@ -26,6 +30,6 @@ export default async function handler(req, res) {
     res.status(response.status).send(data);
   } catch (error) {
     console.error('Proxy error:', error);
-    res.status(500).json({ error: 'Proxy error' });
+    res.status(500).json({ error: 'Proxy error: ' + error.message });
   }
 }
