@@ -1,13 +1,12 @@
 version: '3.8'
 
 services:
-  atomichack-bot:
+  atomichack-api:
     build: .
-    container_name: atomichack-log-monitor
+    container_name: atomichack-api
     restart: unless-stopped
     
     environment:
-      - BOT_TOKEN=${BOT_TOKEN}
       - LOG_LEVEL=INFO
       - AIOHTTP_CLIENT_TIMEOUT=600
     
@@ -17,10 +16,12 @@ services:
     volumes:
       - ./downloads:/app/downloads
       - ./reports:/app/reports
-      - ./src/bot/services/anomalies_problems.csv:/app/src/bot/services/anomalies_problems.csv
     
     networks:
       - atomichack-network
+    
+    ports:
+      - "8001:8001"
     
     # Ограничения ресурсов
     deploy:

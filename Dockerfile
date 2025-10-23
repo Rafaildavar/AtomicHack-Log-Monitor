@@ -1,37 +1,29 @@
-# AtomicHack Log Monitor - Dockerfile
+# AtomicHack Log Monitor API - Dockerfile
 # Команда Black Lotus
 
-FROM python:3.13-slim
+FROM python:3.11-slim
 
-# Устанавливаем рабочую директорию
-WORKDIR /app
-
-# Устанавливаем системные зависимости
+# Устанавливаем системные зависимости для компиляции пакетов
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем файлы зависимостей
-COPY requirements.txt .
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем файлы зависимостей API
+COPY api/requirements.txt .
 
 # Устанавливаем Python зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем исходный код
-COPY src/ ./src/
-COPY .env.example .env
+# Копируем весь проект
+COPY . .
 
-# Создаем директории для данных
-RUN mkdir -p downloads reports
+# Открываем порт
+EXPOSE 8001
 
-# Устанавливаем переменные окружения
-ENV PYTHONUNBUFFERED=1
-ENV AIOHTTP_CLIENT_TIMEOUT=600
-
-# Открываем порт (если потребуется webhook)
-EXPOSE 8080
-
-# Запускаем бота
-CMD ["python", "-m", "src.bot.main"]
+# Команда запуска (Render автоматически установит PORT)
+CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8001}
 
