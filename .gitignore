@@ -62,3 +62,13 @@ bot.log
 # Build artifacts
 web/dist/
 web/node_modules/
+
+# Presentation files (too large for git)
+web_dist_direct_api.tar.gz
+*.tar.gz
+
+# Slide files (generated for presentation)
+Slide_*.txt
+*_Slide.md
+*_Comparison.md
+*_Content.md
