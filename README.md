@@ -291,5 +291,5 @@ MIT License - см. файл LICENSE для деталей.
 ## Контакты
 
 - GitHub: [Atomic_black_lotus_191](https://github.com/hackathonsrus/Atomic_black_lotus_191)
-- Email: hackathon@example.com
+- Email: rafail.davar@rambler.ru
 - Документация: [Wiki](https://github.com/hackathonsrus/Atomic_black_lotus_191/wiki)
