@@ -5,14 +5,14 @@
     "VITE_API_URL": ""
   },
   "functions": {
-    "vercel-api/proxy.js": {
+    "api/proxy.js": {
       "maxDuration": 300
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/vercel-api/proxy.js"
+      "destination": "/api/proxy"
     }
   ]
 }
