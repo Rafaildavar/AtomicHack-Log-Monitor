@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Use HTTP API URL for development (will be HTTPS in production)
+// Use HTTP API URL for development (will be HTTPS in production) - Updated
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://87.228.88.162';
 
 export const api = axios.create({
