@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trash2, ExternalLink, Clock, FileText } from 'lucide-react';
+import { Trash2, ExternalLink, Clock, FileText, AlertCircle, TrendingUp } from 'lucide-react';
 import { formatDate, formatNumber } from '../lib/utils';
 import type { AnalyzeResponse } from '../api/client';
 
@@ -46,6 +46,11 @@ export default function History() {
     navigate('/results', { state: { data: item.data, error: null } });
   };
 
+  // Рассчитываем статистику
+  const totalAnalyses = history.length;
+  const totalProblems = history.reduce((sum, item) => sum + (item.data?.results?.length || 0), 0);
+  const avgProblems = totalAnalyses > 0 ? (totalProblems / totalAnalyses).toFixed(1) : 0;
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -62,6 +67,56 @@ export default function History() {
             Все ваши предыдущие анализы сохранены локально
           </p>
         </motion.div>
+
+        {/* Stats Cards - только если есть история */}
+        {history.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="card"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm mb-2">Всего анализов</p>
+                  <p className="text-3xl font-bold text-white">{totalAnalyses}</p>
+                </div>
+                <FileText className="w-12 h-12 text-atomic-accent opacity-50" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="card"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm mb-2">Всего проблем найдено</p>
+                  <p className="text-3xl font-bold text-red-400">{totalProblems}</p>
+                </div>
+                <AlertCircle className="w-12 h-12 text-red-400 opacity-50" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="card"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm mb-2">Среднее проблем на анализ</p>
+                  <p className="text-3xl font-bold text-atomic-accent">{avgProblems}</p>
+                </div>
+                <TrendingUp className="w-12 h-12 text-atomic-accent opacity-50" />
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         {history.length === 0 ? (
           <motion.div
@@ -131,19 +186,19 @@ export default function History() {
                         <div>
                           <p className="text-gray-500">Проблем</p>
                           <p className="text-atomic-accent font-bold">
-                            {formatNumber(item.data.analysis.ml_results.total_problems)}
+                            {formatNumber(item.data?.analysis?.ml_results?.total_problems || 0)}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-500">Аномалий</p>
                           <p className="text-yellow-400 font-bold">
-                            {formatNumber(item.data.analysis.ml_results.unique_anomalies)}
+                            {formatNumber(item.data?.analysis?.ml_results?.unique_anomalies || 0)}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-500">Файлов</p>
                           <p className="text-purple-400 font-bold">
-                            {formatNumber(item.data.analysis.ml_results.unique_files)}
+                            {formatNumber(item.data?.analysis?.ml_results?.unique_files || 0)}
                           </p>
                         </div>
                       </div>

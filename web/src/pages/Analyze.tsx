@@ -128,40 +128,61 @@ export default function Analyze() {
       },
       {
         onSuccess: (data) => {
-          // Сохраняем в историю (БЕЗ HTML графиков чтобы не переполнить localStorage)
+          // НИКОГДА не сохраняем HTML графики в localStorage - они слишком большие!
+          // Сохраняем только метаданные + file_id для будущей генерации графиков
           const historyItem = {
             id: `${Date.now()}`,
             timestamp: new Date().toISOString(),
             filename: logFile.name,
+            file_id: data.file_id,  // ID файла на сервере для генерации графиков
             data: {
               status: data.status,
               analysis: data.analysis,
               results: data.results,
               excel_report: data.excel_report,
-              // Графики НЕ сохраняем - они генерируются каждый раз
+              // HTML графики НЕ сохраняем - они вызывают QuotaExceededError
             },
           };
 
           const saved = localStorage.getItem('analysis_history');
           const history = saved ? JSON.parse(saved) : [];
           history.unshift(historyItem); // Добавляем в начало
-          localStorage.setItem('analysis_history', JSON.stringify(history.slice(0, 50))); // Сохраняем последние 50
+          
+          try {
+            localStorage.setItem('analysis_history', JSON.stringify(history.slice(0, 50))); // Сохраняем последние 50
+            console.log('✅ История сохранена (без HTML графиков)');
+          } catch (e) {
+            console.error('⚠️ Ошибка сохранения истории:', e);
+            // Пробуем сохранить только последние 10
+            localStorage.setItem('analysis_history', JSON.stringify(history.slice(0, 10)));
+          }
 
           console.log('✅ Анализ завершен! Полученный threshold:', data.analysis.threshold_used);
           console.log('📊 Данные для Results:', data);
           console.log('📊 Количество результатов:', data.results?.length);
           
-          // Сохраняем в sessionStorage БЕЗ HTML графиков (они слишком большие)
-          const dataForStorage = {
+          // Сохраняем базовые данные БЕЗ графиков в sessionStorage (для перезагрузки страницы)
+          const dataWithoutGraphs = {
             status: data.status,
             analysis: data.analysis,
             results: data.results,
             excel_report: data.excel_report,
-            // log_visualization и anomaly_graph НЕ сохраняем
           };
-          sessionStorage.setItem('analysis_results', JSON.stringify(dataForStorage));
           
-          navigate('/results');
+          try {
+            sessionStorage.setItem('analysis_results', JSON.stringify(dataWithoutGraphs));
+          } catch (e) {
+            console.error('Ошибка сохранения в sessionStorage:', e);
+          }
+          
+          // Передаем ПОЛНЫЕ данные (с графиками) через React Router state
+          // Это НЕ использует localStorage/sessionStorage, а хранится в памяти
+          navigate('/results', { 
+            state: { 
+              data: data,  // Полные данные включая HTML графики
+              error: null 
+            } 
+          });
         },
         onError: (error) => {
           // Navigate to results page with error

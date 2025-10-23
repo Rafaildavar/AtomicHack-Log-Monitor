@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, AlertCircle, FileText } from 'lucide-react';
+import { BarChart3, BarChart2 } from 'lucide-react';
+import TimelineVisualization from '../components/dashboard/TimelineVisualization';
+import GraphModal from '../components/dashboard/GraphModal';
 
 export default function Dashboard() {
   const [analysisHistory, setAnalysisHistory] = useState<any[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
 
   useEffect(() => {
     // Загружаем историю анализов из localStorage
@@ -18,10 +22,15 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Рассчитываем статистику
-  const totalAnalyses = analysisHistory.length;
-  const totalProblems = analysisHistory.reduce((sum, item) => sum + (item.data?.results?.length || 0), 0);
-  const avgProblems = totalAnalyses > 0 ? (totalProblems / totalAnalyses).toFixed(1) : 0;
+  const handleShowGraph = (item: any) => {
+    setSelectedAnalysis(item);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedAnalysis(null);
+  };
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4">
@@ -35,54 +44,6 @@ export default function Dashboard() {
           <h1 className="text-4xl font-bold text-white mb-2">📊 Dashboard</h1>
           <p className="text-gray-400">Статистика анализов и проблем</p>
         </motion.div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="card"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm mb-2">Всего анализов</p>
-                <p className="text-3xl font-bold text-white">{totalAnalyses}</p>
-              </div>
-              <FileText className="w-12 h-12 text-atomic-accent opacity-50" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="card"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm mb-2">Всего проблем найдено</p>
-                <p className="text-3xl font-bold text-red-400">{totalProblems}</p>
-              </div>
-              <AlertCircle className="w-12 h-12 text-red-400 opacity-50" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="card"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm mb-2">Среднее проблем на анализ</p>
-                <p className="text-3xl font-bold text-atomic-accent">{avgProblems}</p>
-              </div>
-              <TrendingUp className="w-12 h-12 text-atomic-accent opacity-50" />
-            </div>
-          </motion.div>
-        </div>
 
         {/* История анализов */}
         <motion.div
@@ -110,6 +71,7 @@ export default function Dashboard() {
                     <th className="text-left py-3 px-4 text-gray-400">Время</th>
                     <th className="text-right py-3 px-4 text-gray-400">Проблем</th>
                     <th className="text-right py-3 px-4 text-gray-400">Аномалий</th>
+                    <th className="text-center py-3 px-4 text-gray-400">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,6 +93,16 @@ export default function Dashboard() {
                       <td className="py-3 px-4 text-right text-atomic-accent font-semibold">
                         {item.data?.analysis?.ml_results?.unique_anomalies || 0}
                       </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => handleShowGraph(item)}
+                          className="inline-flex items-center space-x-1 px-3 py-1 rounded-lg bg-atomic-blue/20 hover:bg-atomic-blue/30 text-atomic-accent border border-atomic-blue/50 transition-all hover:scale-105 text-sm"
+                          title="Показать график Timeline"
+                        >
+                          <BarChart2 className="w-4 h-4" />
+                          <span>Графики</span>
+                        </button>
+                      </td>
                     </motion.tr>
                   ))}
                 </tbody>
@@ -149,7 +121,7 @@ export default function Dashboard() {
           >
             <h2 className="text-2xl font-bold text-white mb-6">📈 Последний анализ</h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Детали последнего анализа */}
               <motion.div className="card">
                 <h3 className="text-lg font-bold text-white mb-4">Информация</h3>
@@ -216,7 +188,21 @@ export default function Dashboard() {
                 </div>
               </motion.div>
             </div>
+
+            {/* Timeline график от коллеги */}
+            <TimelineVisualization />
           </motion.div>
+        )}
+
+        {/* Modal для показа графиков */}
+        {selectedAnalysis && (
+          <GraphModal
+            isOpen={modalOpen}
+            onClose={handleCloseModal}
+            filename={selectedAnalysis.filename}
+            isZip={selectedAnalysis.filename.endsWith('.zip')}
+            fileId={selectedAnalysis.file_id}
+          />
         )}
       </div>
     </div>

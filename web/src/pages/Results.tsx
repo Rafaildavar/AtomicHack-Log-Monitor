@@ -10,16 +10,21 @@ export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Пробуем получить данные из sessionStorage или из state
+  // Приоритет получения данных:
+  // 1. location.state (содержит HTML графики, передается через navigate)
+  // 2. sessionStorage (только базовые данные БЕЗ графиков, для перезагрузки страницы)
   let data = location.state?.data as AnalyzeResponse;
   let error = location.state?.error as string | null;
+  
+  console.log('📊 Данные из location.state:', data ? 'есть' : 'нет');
+  console.log('📊 Графики в данных:', data?.log_visualization ? 'есть' : 'нет');
   
   if (!data) {
     const savedData = sessionStorage.getItem('analysis_results');
     if (savedData) {
       try {
         data = JSON.parse(savedData);
-        console.log('📊 Данные загружены из sessionStorage:', data);
+        console.log('📊 Данные загружены из sessionStorage (без графиков)');
       } catch (e) {
         console.error('Ошибка парсинга данных из sessionStorage:', e);
       }
@@ -131,10 +136,10 @@ export default function Results() {
         >
           <h2 className="text-xl font-bold text-white mb-4">Общая статистика</h2>
           <StatsCards
-            totalProblems={data.analysis.ml_results.total_problems}
-            uniqueAnomalies={data.analysis.ml_results.unique_anomalies}
-            uniqueProblems={data.analysis.ml_results.unique_problems}
-            uniqueFiles={data.analysis.ml_results.unique_files}
+            totalProblems={data.analysis?.ml_results?.total_problems || 0}
+            uniqueAnomalies={data.analysis?.ml_results?.unique_anomalies || 0}
+            uniqueProblems={data.analysis?.ml_results?.unique_problems || 0}
+            uniqueFiles={data.analysis?.ml_results?.unique_files || 0}
           />
         </motion.div>
 
@@ -151,19 +156,19 @@ export default function Results() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-300">Всего строк</span>
-                <span className="text-white font-semibold">{data.analysis.basic_stats.total_lines}</span>
+                <span className="text-white font-semibold">{data.analysis?.basic_stats?.total_lines || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-red-400">Ошибки (ERROR)</span>
-                <span className="text-red-400 font-semibold">{data.analysis.basic_stats.error_count}</span>
+                <span className="text-red-400 font-semibold">{data.analysis?.basic_stats?.error_count || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-yellow-400">Предупреждения (WARN)</span>
-                <span className="text-yellow-400 font-semibold">{data.analysis.basic_stats.warning_count}</span>
+                <span className="text-yellow-400 font-semibold">{data.analysis?.basic_stats?.warning_count || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-green-400">Информация (INFO)</span>
-                <span className="text-green-400 font-semibold">{data.analysis.basic_stats.info_count}</span>
+                <span className="text-green-400 font-semibold">{data.analysis?.basic_stats?.info_count || 0}</span>
               </div>
             </div>
           </motion.div>
@@ -179,7 +184,7 @@ export default function Results() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-300">Порог схожести</span>
-                <span className="text-atomic-accent font-semibold">{data.analysis.threshold_used}</span>
+                <span className="text-atomic-accent font-semibold">{data.analysis?.threshold_used || 0.7}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-300">Статус</span>
@@ -220,7 +225,7 @@ export default function Results() {
               <tbody>
                 {data.results.map((result, index) => (
                   <motion.tr
-                    key={result['ID аномалии']}
+                    key={`${result['ID аномалии']}-${result['Файл с проблемой']}-${result['№ строки']}-${index}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 * index }}
@@ -264,7 +269,7 @@ export default function Results() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
             className="mt-6 card border-yellow-400/20 bg-yellow-400/5"
           >
             <h3 className="text-lg font-bold text-yellow-400 mb-3">Рекомендации</h3>

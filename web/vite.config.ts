@@ -25,6 +25,7 @@ export default defineConfig({
   },
   // Development optimizations
   server: {
+    port: 5173,
     middlewareMode: false,
     hmr: true,
   },

@@ -37,6 +37,7 @@ result_df.py.html
 
 # API generated files
 api/reports/
+api/uploads/
 api/__pycache__/
 api/*.log
 

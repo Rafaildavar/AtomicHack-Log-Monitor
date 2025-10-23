@@ -42,6 +42,8 @@ export interface MLResults {
 
 export interface AnalyzeResponse {
   status: string;
+  file_id: string;  // ID файла для будущей генерации графиков
+  filename: string;
   analysis: {
     basic_stats: BasicStats;
     ml_results: MLResults;
