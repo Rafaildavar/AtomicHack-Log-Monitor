@@ -13,6 +13,7 @@ const About = lazy(() => import('./pages/About'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const History = lazy(() => import('./pages/History'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Realtime = lazy(() => import('./pages/Realtime'));
 
 // Loading Fallback
 const LoadingFallback = () => (
@@ -60,6 +61,7 @@ function AppContent() {
               <Route path="/analyze" element={<Analyze />} />
               <Route path="/results" element={<Results />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/realtime" element={<Realtime />} />
               <Route path="/history" element={<History />} />
               <Route path="/docs" element={<Documentation />} />
               <Route path="/about" element={<About />} />
