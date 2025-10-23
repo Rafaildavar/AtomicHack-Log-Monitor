@@ -2,12 +2,11 @@
 
 ## 🎯 Концепция
 
-Проект развивается в **экосистему** с тремя точками доступа:
+Проект развивается в **экосистему** с двумя точками доступа:
 1. **Telegram Bot** - для быстрого анализа через мессенджер
 2. **REST API** - для интеграции в другие системы
-3. **Web Interface** - для удобного анализа через браузер
 
-**Ключевая особенность:** Все три интерфейса используют **одинаковую логику анализа** (написанную коллегой), что гарантирует единообразие результатов.
+**Ключевая особенность:** Оба интерфейса используют **одинаковую логику анализа** (написанную коллегой), что гарантирует единообразие результатов.
 
 ## 📊 Структура проекта
 
@@ -36,18 +35,10 @@ AtomicHack-Log-Monitor/
 │   ├── requirements.txt
 │   └── README.md
 │
-├── web/                           # Веб-интерфейс (в разработке)
-│   ├── frontend/                 # React/Vue
-│   │   ├── src/
-│   │   ├── public/
-│   │   └── package.json
-│   └── backend/                  # Опционально (может использовать API напрямую)
-│
 ├── docker/
 │   ├── docker-compose.yml        # Все сервисы вместе
 │   ├── Dockerfile.api
 │   ├── Dockerfile.bot
-│   └── Dockerfile.web
 │
 ├── docs/
 │   ├── API.md
@@ -68,12 +59,12 @@ AtomicHack-Log-Monitor/
 └────┬─────────────────┬─────────────────┬────────────────────┘
      │                 │                 │
      │                 │                 │
-┌────▼────┐      ┌─────▼─────┐      ┌──▼──────┐
-│Telegram │      │    API    │      │   Web   │
-│  Bot    │      │ (FastAPI) │      │  (React)│
-└────┬────┘      └─────┬─────┘      └──┬──────┘
-     │                 │                 │
-     └─────────────────┼─────────────────┘
+┌────▼────┐      ┌─────▼─────┐
+│Telegram │      │    API    │
+│  Bot    │      │ (FastAPI) │
+└────┬────┘      └─────┬─────┘
+     │                 │
+     └─────────────────┘
                        │
               ┌────────▼────────┐
               │   CORE SERVICES │
@@ -105,7 +96,6 @@ AtomicHack-Log-Monitor/
 **Используется в:**
 - Telegram Bot: `src/bot/handlers/upload.py`
 - API: `api/main.py` → POST `/api/v1/analyze`
-- Web: будет использовать API
 
 ### 2. LogParser
 
@@ -122,7 +112,6 @@ AtomicHack-Log-Monitor/
 **Используется в:**
 - Telegram Bot: `src/bot/services/log_parser.py` (async версия)
 - API: `core/services/log_parser.py` (sync версия)
-- Web: через API
 
 ### 3. ReportGenerator
 
@@ -138,7 +127,6 @@ AtomicHack-Log-Monitor/
 **Используется в:**
 - Telegram Bot: `src/bot/services/analysis_history.py`
 - API: `api/main.py` → генерация Excel
-- Web: скачивание через API
 
 ## 🔌 API Endpoints
 
@@ -175,19 +163,6 @@ AtomicHack-Log-Monitor/
 - Уведомления о завершении анализа
 - Мультиязычность
 
-## 🌐 Web Interface (TODO #2)
-
-**Технологии:**
-- Frontend: React + TypeScript + TailwindCSS
-- API клиент: Axios + React Query
-- Графики: Chart.js
-
-**Страницы:**
-1. **Главная** - описание, демо, команда
-2. **Анализ** - drag&drop, выбор словаря, настройки
-3. **Результаты** - таблица, графики, экспорт
-4. **История** - сохраненные анализы (требует БД)
-5. **API Docs** - интерактивная документация
 
 ## 🐳 Docker
 
@@ -195,7 +170,6 @@ AtomicHack-Log-Monitor/
 - `docker-compose.yml` - оркестрация всех сервисов
 - `Dockerfile.api` - API контейнер
 - `Dockerfile.bot` - Bot контейнер  
-- `Dockerfile.web` - Web контейнер
 
 **Запуск всей системы:**
 
