@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use relative paths for Vercel proxy
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// Use HTTPS API URL for production
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://87.228.88.162';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

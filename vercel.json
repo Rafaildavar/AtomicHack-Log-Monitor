@@ -2,17 +2,6 @@
   "buildCommand": "cd web && npm install && npm run build",
   "outputDirectory": "web/dist",
   "env": {
-    "VITE_API_URL": ""
-  },
-  "functions": {
-    "api/proxy.js": {
-      "maxDuration": 300
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/proxy"
-    }
-  ]
+    "VITE_API_URL": "https://87.228.88.162"
+  }
 }
