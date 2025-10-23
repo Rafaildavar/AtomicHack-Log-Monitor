@@ -72,3 +72,44 @@ Slide_*.txt
 *_Slide.md
 *_Comparison.md
 *_Content.md
+
+# Data files and reports
+*.csv
+*.xlsx
+*.json
+reports/
+data/
+uploads/
+logs/
+
+# Deployment and hosting
+render.yaml
+fly.toml
+railway.json
+vercel.json
+netlify.toml
+
+# Build and distribution
+dist/
+build/
+*.tar.gz
+*.zip
+
+# Environment and config
+.env
+.env.local
+.env.production
+config.json
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
